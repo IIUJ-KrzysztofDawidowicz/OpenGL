@@ -175,9 +175,143 @@ void msgbox(const char *msg,char *title){
 
 class ControlsGLUT: public Controls
 {
+public:
+// get mouse button state
+void processMouse(int button, int state, int x, int y) {
+
+	if (state == GLUT_DOWN){                                                    // if mouse button is down...
+		if(button == GLUT_LEFT_BUTTON) leftButton = true;                       // obvious stuff
+		if(button == GLUT_RIGHT_BUTTON) rightButton = true;                     // ...
+	}else{
+		leftButton = false;
+		rightButton = false;
+	}
+}
+
+
+// poll the shift, control, and alt keys
+void getShiftStatus(int shift_state) {
+
+	shiftkey = false;
+	ctrlkey = false;
+	altkey = false;
+	switch(shift_state){
+		case 0: break;
+		case 1: shiftkey = true; break;
+		case 2: ctrlkey = true; break;
+		case 3: shiftkey = true; ctrlkey = true; break;
+		case 4: altkey = true; break;
+		case 5: shiftkey = true; altkey = true; break;
+		case 6: ctrlkey = true; altkey = true; break;
+		case 7: shiftkey = true; ctrlkey = true; altkey = true; break;
+	}
+}
+
+
+
+// get key (down) states
+void keydown(unsigned char key, int x, int y){
+
+	switch (key) {
+	//	case 'f': case 'F': freemove = !freemove; break;
+		case 'w': case 'W': wkey=true; break;
+		case 's': case 'S': skey=true; break;
+		case 'd': case 'D': dkey=true; break;
+		case 'a': case 'A': akey=true; break;
+		case 'p': case 'P': przesuwanie = !przesuwanie; break;
+		case 32: spacebar = true; zmianaKoloru=!zmianaKoloru; break;
+		case 27: exit(0); break;
+   }
+}
+
+
+
+// get key (up) states
+void keyup(unsigned char key,int x, int y){
+
+	switch(key){
+		case 'w': case 'W': wkey=false; break;
+		case 's': case 'S': skey=false; break;
+		case 'd': case 'D': dkey=false; break;
+		case 'a': case 'A': akey=false; break;
+		case 38: upkey = false; break;
+		case 40: downkey = false; break;
+		case 32: spacebar = false; break;
+		case 37:
+			leftkey=false;
+			altleftkey=false;
+			break;
+		case 39:
+			altrightkey = false;
+			rightkey = false;
+			break;
+	}
+}
+
+
+
+void specialDown(int key, int mx,int my){
+
+	getShiftStatus(glutGetModifiers());
+	switch(key){
+		case GLUT_KEY_LEFT:
+			if (altkey)altleftkey=true;
+			else{leftkey=true;}
+			break;
+		case GLUT_KEY_RIGHT:
+			if (altkey)altrightkey=true;
+			else{rightkey=true;}
+			break;
+		case GLUT_KEY_UP: upkey=true; break;
+		case GLUT_KEY_DOWN: downkey=true; break;
+		case 104: pageupkey=true; break;
+		case 105: pagedownkey=true; break;
+	}
+}
+
+
+
+void specialKeyUp(int key, int mx, int my){
+
+	switch(key){
+		case GLUT_KEY_LEFT:
+			leftkey=false;
+			altleftkey=false;
+			break;
+		case GLUT_KEY_RIGHT:
+			rightkey=false;
+			altrightkey=false;
+			break;
+		case GLUT_KEY_UP: upkey=false; break;
+		case GLUT_KEY_DOWN: downkey=false; break;
+		case 104: pageupkey=false; break;
+		case 105: pagedownkey=false; break;
+	}
+}
+
+
+
+// adjust camera pitch and yaw (this function is called when the mouse is moved while a button is pressed)
+void processMouseActiveMotion(int x, int y){
+
+	mouseX = x;
+	mouseY = y;
+}
+
+
+
+// adjust camera pitch and yaw (when mouse buttons are idle)
+void processMousePassiveMotion(int x, int y){
+
+	mouseX = x;
+	mouseY = y;
+}
+
+
+
 };
 
-Controls* controls = new ControlsGLUT();
+ControlsGLUT* controls = new ControlsGLUT();
 
 class Camera
 {
@@ -377,14 +511,14 @@ Camera camera = Camera(controls);
 
 // get mouse button state
 void processMouse(int button, int state, int x, int y) {
-
-	if (state == GLUT_DOWN){                                                    // if mouse button is down...
-		if(button == GLUT_LEFT_BUTTON) controls->leftButton = true;                       // obvious stuff
-		if(button == GLUT_RIGHT_BUTTON) controls->rightButton = true;                     // ...
-	}else{
-		controls->leftButton = false;
-		controls->rightButton = false;
-	}
+	controls->processMouse(button, state,x, y);
+	//if (state == GLUT_DOWN){                                                    // if mouse button is down...
+	//	if(button == GLUT_LEFT_BUTTON) controls->leftButton = true;                       // obvious stuff
+	//	if(button == GLUT_RIGHT_BUTTON) controls->rightButton = true;                     // ...
+	//}else{
+	//	controls->leftButton = false;
+	//	controls->rightButton = false;
+	//}
 }
 
 
@@ -479,19 +613,20 @@ void reshape (int w, int h){
 // poll the shift, control, and alt keys
 void getShiftStatus(int shift_state) {
 
-	controls->shiftkey = false;
-	controls->ctrlkey = false;
-	controls->altkey = false;
-	switch(shift_state){
-		case 0: break;
-		case 1: controls->shiftkey = true; break;
-		case 2: controls->ctrlkey = true; break;
-		case 3: controls->shiftkey = true; controls->ctrlkey = true; break;
-		case 4: controls->altkey = true; break;
-		case 5: controls->shiftkey = true; controls->altkey = true; break;
-		case 6: controls->ctrlkey = true; controls->altkey = true; break;
-		case 7: controls->shiftkey = true; controls->ctrlkey = true; controls->altkey = true; break;
-	}
+	controls->getShiftStatus(shift_state);
+	//controls->shiftkey = false;
+	//controls->ctrlkey = false;
+	//controls->altkey = false;
+	//switch(shift_state){
+	//	case 0: break;
+	//	case 1: controls->shiftkey = true; break;
+	//	case 2: controls->ctrlkey = true; break;
+	//	case 3: controls->shiftkey = true; controls->ctrlkey = true; break;
+	//	case 4: controls->altkey = true; break;
+	//	case 5: controls->shiftkey = true; controls->altkey = true; break;
+	//	case 6: controls->ctrlkey = true; controls->altkey = true; break;
+	//	case 7: controls->shiftkey = true; controls->ctrlkey = true; controls->altkey = true; break;
+	//}
 }
 
 
@@ -499,16 +634,17 @@ void getShiftStatus(int shift_state) {
 // get key (down) states
 void keydown(unsigned char key, int x, int y){
 
-	switch (key) {
-	//	case 'f': case 'F': freemove = !freemove; break;
-		case 'w': case 'W': controls->wkey=true; break;
-		case 's': case 'S': controls->skey=true; break;
-		case 'd': case 'D': controls->dkey=true; break;
-		case 'a': case 'A': controls->akey=true; break;
-		case 'p': case 'P': przesuwanie = !przesuwanie; break;
-		case 32: controls->spacebar = true; zmianaKoloru=!zmianaKoloru; break;
-		case 27: exit(0); break;
-   }
+	controls->keydown(key, x, y);
+	//switch (key) {
+	////	case 'f': case 'F': freemove = !freemove; break;
+	//	case 'w': case 'W': controls->wkey=true; break;
+	//	case 's': case 'S': controls->skey=true; break;
+	//	case 'd': case 'D': controls->dkey=true; break;
+	//	case 'a': case 'A': controls->akey=true; break;
+	//	case 'p': case 'P': przesuwanie = !przesuwanie; break;
+	//	case 32: controls->spacebar = true; zmianaKoloru=!zmianaKoloru; break;
+	//	case 27: exit(0); break;
+ //  }
 }
 
 
@@ -516,64 +652,67 @@ void keydown(unsigned char key, int x, int y){
 // get key (up) states
 void keyup(unsigned char key,int x, int y){
 
-	switch(key){
-		case 'w': case 'W': controls->wkey=false; break;
-		case 's': case 'S': controls->skey=false; break;
-		case 'd': case 'D': controls->dkey=false; break;
-		case 'a': case 'A': controls->akey=false; break;
-		case 38: controls->upkey = false; break;
-		case 40: controls->downkey = false; break;
-		case 32: controls->spacebar = false; break;
-		case 37:
-			controls->leftkey=false;
-			controls->altleftkey=false;
-			break;
-		case 39:
-			controls->altrightkey = false;
-			controls->rightkey = false;
-			break;
-	}
+	controls->keyup(key, x, y);
+	//switch(key){
+	//	case 'w': case 'W': controls->wkey=false; break;
+	//	case 's': case 'S': controls->skey=false; break;
+	//	case 'd': case 'D': controls->dkey=false; break;
+	//	case 'a': case 'A': controls->akey=false; break;
+	//	case 38: controls->upkey = false; break;
+	//	case 40: controls->downkey = false; break;
+	//	case 32: controls->spacebar = false; break;
+	//	case 37:
+	//		controls->leftkey=false;
+	//		controls->altleftkey=false;
+	//		break;
+	//	case 39:
+	//		controls->altrightkey = false;
+	//		controls->rightkey = false;
+	//		break;
+	//}
 }
 
 
 
 void specialDown(int key, int mx,int my){
 
-	getShiftStatus(glutGetModifiers());
-	switch(key){
-		case GLUT_KEY_LEFT:
-			if (controls->altkey)controls->altleftkey=true;
-			else{controls->leftkey=true;}
-			break;
-		case GLUT_KEY_RIGHT:
-			if (controls->altkey)controls->altrightkey=true;
-			else{controls->rightkey=true;}
-			break;
-		case GLUT_KEY_UP: controls->upkey=true; break;
-		case GLUT_KEY_DOWN: controls->downkey=true; break;
-		case 104: controls->pageupkey=true; break;
-		case 105: controls->pagedownkey=true; break;
-	}
+	controls->specialDown(key, mx, my);
+	//getShiftStatus(glutGetModifiers());
+	//switch(key){
+	//	case GLUT_KEY_LEFT:
+	//		if (controls->altkey)controls->altleftkey=true;
+	//		else{controls->leftkey=true;}
+	//		break;
+	//	case GLUT_KEY_RIGHT:
+	//		if (controls->altkey)controls->altrightkey=true;
+	//		else{controls->rightkey=true;}
+	//		break;
+	//	case GLUT_KEY_UP: controls->upkey=true; break;
+	//	case GLUT_KEY_DOWN: controls->downkey=true; break;
+	//	case 104: controls->pageupkey=true; break;
+	//	case 105: controls->pagedownkey=true; break;
+	//}
 }
 
 
 
 void specialKeyUp(int key, int mx, int my){
 
-	switch(key){
-		case GLUT_KEY_LEFT:
-			controls->leftkey=false;
-			controls->altleftkey=false;
-			break;
-		case GLUT_KEY_RIGHT:
-			controls->rightkey=false;
-			controls->altrightkey=false;
-			break;
-		case GLUT_KEY_UP: controls->upkey=false; break;
-		case GLUT_KEY_DOWN: controls->downkey=false; break;
-		case 104: controls->pageupkey=false; break;
-		case 105: controls->pagedownkey=false; break;
-	}
+	controls->specialKeyUp(key, mx, my);
+	//switch(key){
+	//	case GLUT_KEY_LEFT:
+	//		controls->leftkey=false;
+	//		controls->altleftkey=false;
+	//		break;
+	//	case GLUT_KEY_RIGHT:
+	//		controls->rightkey=false;
+	//		controls->altrightkey=false;
+	//		break;
+	//	case GLUT_KEY_UP: controls->upkey=false; break;
+	//	case GLUT_KEY_DOWN: controls->downkey=false; break;
+	//	case 104: controls->pageupkey=false; break;
+	//	case 105: controls->pagedownkey=false; break;
+	//}
 }
 
 
@@ -581,8 +720,9 @@ void specialKeyUp(int key, int mx, int my){
 // adjust camera pitch and yaw (this function is called when the mouse is moved while a button is pressed)
 void processMouseActiveMotion(int x, int y){
 
-	controls->mouseX = x;
-	controls->mouseY = y;
+	controls->processMouseActiveMotion(x, y);
+	//controls->mouseX = x;
+	//controls->mouseY = y;
 }
 
 
@@ -590,8 +730,9 @@ void processMouseActiveMotion(int x, int y){
 // adjust camera pitch and yaw (when mouse buttons are idle)
 void processMousePassiveMotion(int x, int y){
 
-	controls->mouseX = x;
-	controls->mouseY = y;
+	controls->processMousePassiveMotion(x,y);
+	//controls->mouseX = x;
+	//controls->mouseY = y;
 }
 
 
