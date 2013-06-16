@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="controls.h" />
+    <ClInclude Include="ControlsGLUT.h" />
     <ClInclude Include="freeglut.h" />
     <ClInclude Include="freeglut_ext.h" />
     <ClInclude Include="freeglut_std.h" />
