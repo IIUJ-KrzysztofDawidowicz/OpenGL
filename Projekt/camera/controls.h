@@ -23,4 +23,6 @@ bool upkey,                                 // Key States (true / false)
 	 pagedownkey;                           // ...
 
 int mouseX, mouseY;
+bool przesuwanie;
+bool zmianaKoloru;
 };
