@@ -198,7 +198,11 @@ bool upkey,                                 // Key States (true / false)
 int mouseX, mouseY;
 };
 
-Controls* controls = new Controls();
+class ControlsGLUT: public Controls
+{
+};
+
+Controls* controls = new ControlsGLUT();
 
 class Camera
 {
