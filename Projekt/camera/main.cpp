@@ -80,17 +80,28 @@ class Shader
 {
 public:
     GLuint shader_program;
-	void BindValue(const GLchar* name, const float value)
-	{
-		GLuint location = glGetUniformLocation(shader_program, name);
-		glUniform1f(location, value);
-	}
 
-	void BindValue(const GLchar* name, const int value)
-	{
-		GLuint location = glGetUniformLocation(shader_program, name);
-		glUniform1i(location, value);
-	}
+    void LinkShader(GLuint vertex_shader, GLuint fragment_shader)
+{
+      shader_program = glCreateProgram();
+  glAttachShader(shader_program, vertex_shader);
+  glAttachShader(shader_program, fragment_shader);
+
+  glLinkProgram(shader_program);
+  glUseProgram(shader_program);
+}
+
+    void BindValue(const GLchar* name, const float value)
+    {
+        GLuint location = glGetUniformLocation(shader_program, name);
+        glUniform1f(location, value);
+    }
+
+    void BindValue(const GLchar* name, const int value)
+    {
+        GLuint location = glGetUniformLocation(shader_program, name);
+        glUniform1i(location, value);
+    }
 };
 
 Shader* shader = new Shader();
@@ -104,12 +115,77 @@ void error()
   }
 }
 // ----------------------------------------------------------------------------+
+
+bool MakeShader(GLuint shader, char* name)
+{
+    if (shader == 0)
+  {
+    MessageBox(NULL, "Nie ma szejderow", NULL, MB_OK);
+    return false;
+  }
+  char *text = ReadAllTextFromFile(name);
+  if (text == NULL) {
+    MessageBox(NULL, "Nie mo¿e za³adowaæ vertex-szejdera", NULL, MB_OK);
+    return 0;
+  }
+  const char * temp = text;
+  glShaderSource(shader, 1, &temp, NULL);
+  delete [] text;
+  glCompileShader(shader);
+
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    MessageBox(NULL, "B³¹d kompilacji vertex-szejdera", NULL, MB_OK);
+    return 0;
+  }
+}
+
+GLuint MakeVertexShader(char* name)
+{
+      GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+      MakeShader(vertex_shader, name);
+  
+  return vertex_shader;
+}
+
+
+GLuint MakeFragmentShader(char* name)
+{
+  GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+      MakeShader(fragment_shader, name);
+  
+  return fragment_shader;
+}
+
 bool InitShader() {
 
-  GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  GLint status;
+  GLuint vertex_shader = MakeVertexShader("krzysztof.vert");/*glCreateShader(GL_VERTEX_SHADER);
 
-  if (vertex_shader == 0 || fragment_shader == 0)
+  if (vertex_shader == 0)
+  {
+    MessageBox(NULL, "Nie ma szejderow", NULL, MB_OK);
+    return false;
+  }
+  char *vs = ReadAllTextFromFile("krzysztof.vert");
+  if (vs == NULL) {
+    MessageBox(NULL, "Nie mo¿e za³adowaæ vertex-szejdera", NULL, MB_OK);
+    return false;
+  }
+  const char * vv = vs;
+  glShaderSource(vertex_shader, 1, &vv, NULL);
+  delete [] vs;
+  glCompileShader(vertex_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    MessageBox(NULL, "B³¹d kompilacji vertex-szejdera", NULL, MB_OK);
+    return false;
+  }*/
+
+  
+  GLuint fragment_shader = MakeFragmentShader("krzysztof.frag");/*glCreateShader(GL_FRAGMENT_SHADER);
+  if (fragment_shader == 0)
   {
     MessageBox(NULL, "Nie ma szejderow", NULL, MB_OK);
     return false;
@@ -117,48 +193,28 @@ bool InitShader() {
 
   //char *vs = ReadAllTextFromFile("shaders/basic.vert");
   //char *fs = ReadAllTextFromFile("shaders/basic.frag");
-  char *vs = ReadAllTextFromFile("krzysztof.vert");
   char *fs = ReadAllTextFromFile("krzysztof.frag");
 
-  if (vs == NULL) {
-    MessageBox(NULL, "Nie mo¿e za³adowaæ vertex-szejdera", NULL, MB_OK);
-    return false;
-  }
   if (fs == NULL) {
     MessageBox(NULL, "Nie mo¿e za³adowaæ fragment-szejdera", NULL, MB_OK);
     return false;
   }
 
-  const char * vv = vs;
   const char * ff = fs;
 
-  glShaderSource(vertex_shader, 1, &vv, NULL);
   glShaderSource(fragment_shader, 1, &ff, NULL);
 
-  delete [] vs;
   delete [] fs;
 
-  glCompileShader(vertex_shader);
   glCompileShader(fragment_shader);
 
-  GLint status;
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-  if (status != GL_TRUE) {
-    MessageBox(NULL, "B³¹d kompilacji vertex-szejdera", NULL, MB_OK);
-    return false;
-  }
   glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
     MessageBox(NULL, "B³¹d kompilacji fragment-szejdera", NULL, MB_OK);
     return false;
-  }
+  }*/
   
-  shader->shader_program = glCreateProgram();
-  glAttachShader(shader->shader_program, vertex_shader);
-  glAttachShader(shader->shader_program, fragment_shader);
-
-  glLinkProgram(shader->shader_program);
-  glUseProgram(shader->shader_program);
+  shader->LinkShader(vertex_shader, fragment_shader);
 
   //GLuint location = glGetUniformLocation(shader->shader_program, "texture1");
   //glUniform1i(location, 0);
