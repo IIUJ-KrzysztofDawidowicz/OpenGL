@@ -16,6 +16,9 @@ using namespace std;
 #include "camera.h"
 //#include "controls.h"
 #include "ControlsGLUT.h"
+#include <string>
+
+using std::string;
 
 
 // global doubles for camera
@@ -43,7 +46,7 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 
-GLuint shader_program;
+
 GLuint tekstura[3];
 
 
@@ -73,7 +76,24 @@ char *ReadAllTextFromFile(char *fname) {
     return content;
 }
 
+class Shader
+{
+public:
+    GLuint shader_program;
+	void BindValue(const GLchar* name, const float value)
+	{
+		GLuint location = glGetUniformLocation(shader_program, name);
+		glUniform1f(location, value);
+	}
 
+	void BindValue(const GLchar* name, const int value)
+	{
+		GLuint location = glGetUniformLocation(shader_program, name);
+		glUniform1i(location, value);
+	}
+};
+
+Shader* shader = new Shader();
 
 void error()
 {
@@ -84,7 +104,7 @@ void error()
   }
 }
 // ----------------------------------------------------------------------------+
-bool InitShaders() {
+bool InitShader() {
 
   GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
   GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -133,17 +153,19 @@ bool InitShaders() {
     return false;
   }
   
-  shader_program = glCreateProgram();
-  glAttachShader(shader_program, vertex_shader);
-  glAttachShader(shader_program, fragment_shader);
+  shader->shader_program = glCreateProgram();
+  glAttachShader(shader->shader_program, vertex_shader);
+  glAttachShader(shader->shader_program, fragment_shader);
 
-  glLinkProgram(shader_program);
-  glUseProgram(shader_program);
+  glLinkProgram(shader->shader_program);
+  glUseProgram(shader->shader_program);
 
-  GLuint location = glGetUniformLocation(shader_program, "texture1");
-  glUniform1i(location, 0);
-  location = glGetUniformLocation(shader_program, "texture2");
-  glUniform1i(location, 1);
+  //GLuint location = glGetUniformLocation(shader->shader_program, "texture1");
+  //glUniform1i(location, 0);
+  //location = glGetUniformLocation(shader->shader_program, "texture2");
+  //glUniform1i(location, 1);
+  shader->BindValue("texture1", 0);
+  shader->BindValue("texture2", 1);
   glActiveTextureARB(GL_TEXTURE0_ARB);
   glBindTexture(GL_TEXTURE_2D, tekstura[0]);
   glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -160,7 +182,7 @@ glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 // ----------------------------------------------------------------------------+
 void CleanUpShaders() {
   glUseProgram(0);
-  glDeleteProgram(shader_program);
+  glDeleteProgram(shader->shader_program);
 }
 
 // ----------------------------------------------------------------------------+
@@ -230,10 +252,12 @@ void drawScene(){
   /*if (rotation >= 360.0f)
     rotation = 0.0f;*/
 
-  GLuint location = glGetUniformLocation(shader_program,"rotation");
-  glUniform1f(location, rotation );
-  location = glGetUniformLocation(shader_program,"alpha");
-  glUniform1f(location, alpha );
+  //GLuint location = glGetUniformLocation(shader->shader_program,"rotation");
+  //glUniform1f(location, rotation );
+  shader->BindValue("rotation", rotation);
+  //location = glGetUniformLocation(shader->shader_program,"alpha");
+  //glUniform1f(location, alpha );
+  shader->BindValue("alpha", alpha);
     glPushMatrix();
     gluLookAt(camera.eyeX, camera.eyeY, camera.eyeZ, camera.lookX, camera.lookY, camera.lookZ, 0, 0, 1/*sideX, sideY, sideZ*/);      // move and aim camera
         //glTranslatef(0, 0, -50);
@@ -464,7 +488,7 @@ int main(int argc, char** argv){
       // wczytujemy i ustawiamy tekstury
   tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
   tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
-    InitShaders();
+    InitShader();
     generateScene();
     glutMainLoop();
     return 0;
