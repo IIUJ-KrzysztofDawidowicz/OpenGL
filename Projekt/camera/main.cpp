@@ -46,9 +46,74 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 
+class Tekstury
+{
+public:
+	GLuint tekstura;
+	Tekstury(void);
+	Tekstury(char* plik)
+	{
+		tekstura = LoadGLTexture(plik);
+	}
+	~Tekstury(void);
+
+	static int LoadGLTexture(char *plik);
+};
+Tekstury::Tekstury(void)
+{
+}
 
 
-GLuint tekstura[3];
+Tekstury::~Tekstury(void)
+{
+}
+int Tekstury::LoadGLTexture(char *plik)
+{
+  unsigned int Texture;
+  FILE* img = NULL;
+
+  img = fopen(plik,"rb");
+  if (img==NULL)
+  {
+	MessageBox(NULL, "Nie mo¿na otworzyæ pliku z tekstur¹", "B³¹d", MB_OK);
+	return -1;
+  }
+  unsigned long bWidth = 0;	
+  unsigned long bHeight = 0;	
+  DWORD size = 0;	
+
+  fseek(img,18,SEEK_SET);
+  fread(&bWidth,4,1,img);
+  fread(&bHeight,4,1,img);
+  fseek(img,0,SEEK_END);
+  size = ftell(img) - 54;
+
+  unsigned char *data = (unsigned char*)malloc(size);
+  if (data==NULL)
+  {
+	MessageBox(NULL, "Nie mo¿na zaalokowaæ pamiêci na teksturê", "B³¹d", MB_OK);
+	return -1;
+  }
+
+  fseek(img,54,SEEK_SET);	// image data
+  fread(data,size,1,img);
+  fclose(img);
+
+  glGenTextures(1, &Texture);
+  glBindTexture(GL_TEXTURE_2D, Texture);
+  gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bWidth, bHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, data);
+
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  
+  free(data);
+  return Texture;
+}
+
+Tekstury tekstury[3];
+
+
+//GLuint tekstura[3];
 
 
 Shader* shader;
@@ -71,9 +136,11 @@ bool InitShader()
   shader->BindValue("texture1", 0);
   shader->BindValue("texture2", 1);
   glActiveTextureARB(GL_TEXTURE0_ARB);
-  glBindTexture(GL_TEXTURE_2D, tekstura[0]);
+  //glBindTexture(GL_TEXTURE_2D, tekstura[0]);
+  glBindTexture(GL_TEXTURE_2D, tekstury[0].tekstura);
   glActiveTextureARB(GL_TEXTURE1_ARB);
-  glBindTexture(GL_TEXTURE_2D, tekstura[1]);
+  //glBindTexture(GL_TEXTURE_2D, tekstura[1]);
+  glBindTexture(GL_TEXTURE_2D, tekstury[1].tekstura);
   glEnable(GL_TEXTURE_2D);
 glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
@@ -96,7 +163,6 @@ void msgbox(const char *msg,char *title){
 
 	MessageBoxA(NULL,msg,title,MB_OKCANCEL);
 }
-
 
 
 ControlsGLUT* controls = new ControlsGLUT();
@@ -198,131 +264,38 @@ void reshape (int w, int h){
 	glMatrixMode(GL_MODELVIEW);
 }
 
-
-
 // poll the shift, control, and alt keys
 void getShiftStatus(int shift_state) {
 
 	controls->getShiftStatus(shift_state);
-	//controls->shiftkey = false;
-	//controls->ctrlkey = false;
-	//controls->altkey = false;
-	//switch(shift_state){
-	//	case 0: break;
-	//	case 1: controls->shiftkey = true; break;
-	//	case 2: controls->ctrlkey = true; break;
-	//	case 3: controls->shiftkey = true; controls->ctrlkey = true; break;
-	//	case 4: controls->altkey = true; break;
-	//	case 5: controls->shiftkey = true; controls->altkey = true; break;
-	//	case 6: controls->ctrlkey = true; controls->altkey = true; break;
-	//	case 7: controls->shiftkey = true; controls->ctrlkey = true; controls->altkey = true; break;
-	//}
 }
-
-
-
 // get key (down) states
 void keydown(unsigned char key, int x, int y){
 
 	controls->keydown(key, x, y);
-	//switch (key) {
-	////	case 'f': case 'F': freemove = !freemove; break;
-	//	case 'w': case 'W': controls->wkey=true; break;
-	//	case 's': case 'S': controls->skey=true; break;
-	//	case 'd': case 'D': controls->dkey=true; break;
-	//	case 'a': case 'A': controls->akey=true; break;
-	//	case 'p': case 'P': przesuwanie = !przesuwanie; break;
-	//	case 32: controls->spacebar = true; zmianaKoloru=!zmianaKoloru; break;
-	//	case 27: exit(0); break;
- //  }
 }
-
-
-
 // get key (up) states
 void keyup(unsigned char key,int x, int y){
 
 	controls->keyup(key, x, y);
-	//switch(key){
-	//	case 'w': case 'W': controls->wkey=false; break;
-	//	case 's': case 'S': controls->skey=false; break;
-	//	case 'd': case 'D': controls->dkey=false; break;
-	//	case 'a': case 'A': controls->akey=false; break;
-	//	case 38: controls->upkey = false; break;
-	//	case 40: controls->downkey = false; break;
-	//	case 32: controls->spacebar = false; break;
-	//	case 37:
-	//		controls->leftkey=false;
-	//		controls->altleftkey=false;
-	//		break;
-	//	case 39:
-	//		controls->altrightkey = false;
-	//		controls->rightkey = false;
-	//		break;
-	//}
 }
-
-
-
 void specialDown(int key, int mx,int my){
 
 	controls->specialDown(key, mx, my);
-	//getShiftStatus(glutGetModifiers());
-	//switch(key){
-	//	case GLUT_KEY_LEFT:
-	//		if (controls->altkey)controls->altleftkey=true;
-	//		else{controls->leftkey=true;}
-	//		break;
-	//	case GLUT_KEY_RIGHT:
-	//		if (controls->altkey)controls->altrightkey=true;
-	//		else{controls->rightkey=true;}
-	//		break;
-	//	case GLUT_KEY_UP: controls->upkey=true; break;
-	//	case GLUT_KEY_DOWN: controls->downkey=true; break;
-	//	case 104: controls->pageupkey=true; break;
-	//	case 105: controls->pagedownkey=true; break;
-	//}
 }
-
-
-
 void specialKeyUp(int key, int mx, int my){
 
 	controls->specialKeyUp(key, mx, my);
-	//switch(key){
-	//	case GLUT_KEY_LEFT:
-	//		controls->leftkey=false;
-	//		controls->altleftkey=false;
-	//		break;
-	//	case GLUT_KEY_RIGHT:
-	//		controls->rightkey=false;
-	//		controls->altrightkey=false;
-	//		break;
-	//	case GLUT_KEY_UP: controls->upkey=false; break;
-	//	case GLUT_KEY_DOWN: controls->downkey=false; break;
-	//	case 104: controls->pageupkey=false; break;
-	//	case 105: controls->pagedownkey=false; break;
-	//}
 }
-
-
-
 // adjust camera pitch and yaw (this function is called when the mouse is moved while a button is pressed)
 void processMouseActiveMotion(int x, int y){
 
 	controls->processMouseActiveMotion(x, y);
-	//controls->mouseX = x;
-	//controls->mouseY = y;
 }
-
-
-
 // adjust camera pitch and yaw (when mouse buttons are idle)
 void processMousePassiveMotion(int x, int y){
 
 	controls->processMousePassiveMotion(x,y);
-	//controls->mouseX = x;
-	//controls->mouseY = y;
 }
 
 
@@ -383,8 +356,10 @@ int main(int argc, char** argv){
   g_texturedObject = gluNewQuadric();
   gluQuadricTexture(g_texturedObject, GL_TRUE);
 	  // wczytujemy i ustawiamy tekstury
-  tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
-  tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
+  //tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
+  tekstury[1] = Tekstury("mosaicwindowgp9.bmp");
+  //tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
+  tekstury[0] = Tekstury("earth_sphere.bmp");
 	InitShader();
 	generateScene();
 	glutMainLoop();
