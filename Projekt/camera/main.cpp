@@ -50,6 +50,9 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 GLuint tekstura[3];
 
 
+class Shader
+{
+	
 char *ReadAllTextFromFile(char *fname) {
 	FILE *fp;
 	char *content = NULL;
@@ -75,9 +78,6 @@ char *ReadAllTextFromFile(char *fname) {
 
 	return content;
 }
-
-class Shader
-{
 
 		
 bool MakeShader(GLuint shader, char* name)
@@ -166,17 +166,10 @@ void error()
 // ----------------------------------------------------------------------------+
 
 
-bool InitShader() {
+bool InitShader() 
+{
 
-  //GLuint vertex_shader = MakeVertexShader("krzysztof.vert");
-  //GLuint fragment_shader = MakeFragmentShader("krzysztof.frag");
-  //
-  //shader->LinkShader(vertex_shader, fragment_shader);
 	shader = new Shader("krzysztof.vert", "krzysztof.frag");
-  //GLuint location = glGetUniformLocation(shader->shader_program, "texture1");
-  //glUniform1i(location, 0);
-  //location = glGetUniformLocation(shader->shader_program, "texture2");
-  //glUniform1i(location, 1);
   shader->BindValue("texture1", 0);
   shader->BindValue("texture2", 1);
   glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -216,13 +209,6 @@ Camera camera = Camera(controls, &screenWidth, &screenHeight);
 // get mouse button state
 void processMouse(int button, int state, int x, int y) {
 	controls->processMouse(button, state,x, y);
-	//if (state == GLUT_DOWN){                                                    // if mouse button is down...
-	//	if(button == GLUT_LEFT_BUTTON) controls->leftButton = true;                       // obvious stuff
-	//	if(button == GLUT_RIGHT_BUTTON) controls->rightButton = true;                     // ...
-	//}else{
-	//	controls->leftButton = false;
-	//	controls->rightButton = false;
-	//}
 }
 
 
