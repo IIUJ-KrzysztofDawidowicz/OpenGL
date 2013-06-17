@@ -94,6 +94,7 @@
     <ClInclude Include="glext.h" />
     <ClInclude Include="glu.h" />
     <ClInclude Include="kostka.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tekstury.h" />
     <ClInclude Include="wglext.h" />
