@@ -13,6 +13,11 @@ public:
 		tekstura = LoadGLTexture(plik);
 	}
 	~Tekstura(void);
-
+	void Bind(GLenum texture = GL_TEXTURE0)
+{
+	glActiveTexture(texture);
+	glBindTexture(GL_TEXTURE_2D, tekstura);
+  glEnable(GL_TEXTURE_2D);
+}
 };
 

@@ -48,11 +48,7 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 Tekstura tekstury[3];
-
-
-ControlsGLUT* controls = new ControlsGLUT();
-
-
+ControlsGLUT* controls = new ControlsGLUT(&screenWidth, &screenHeight);;
 Camera camera = Camera(controls, &screenWidth, &screenHeight);
 
 //GLuint tekstura[3];
@@ -71,19 +67,22 @@ void error()
 // ----------------------------------------------------------------------------+
 
 
+
 bool InitShader() 
 {
 
 	shader = new Shader("krzysztof.vert", "krzysztof.frag");
   shader->BindValue("texture1", 0);
   shader->BindValue("texture2", 1);
-  glActiveTextureARB(GL_TEXTURE0_ARB);
-  //glBindTexture(GL_TEXTURE_2D, tekstura[0]);
-  glBindTexture(GL_TEXTURE_2D, tekstury[0].tekstura);
-  glActiveTextureARB(GL_TEXTURE1_ARB);
-  //glBindTexture(GL_TEXTURE_2D, tekstura[1]);
-  glBindTexture(GL_TEXTURE_2D, tekstury[1].tekstura);
-  glEnable(GL_TEXTURE_2D);
+  //glActiveTexture(GL_TEXTURE0);
+  ////glBindTexture(GL_TEXTURE_2D, tekstura[0]);
+  //glBindTexture(GL_TEXTURE_2D, tekstury[0].tekstura);
+  tekstury[0].Bind();
+  tekstury[1].Bind(GL_TEXTURE1);
+  //glActiveTexture(GL_TEXTURE1);
+  ////glBindTexture(GL_TEXTURE_2D, tekstura[1]);
+  //glBindTexture(GL_TEXTURE_2D, tekstury[1].tekstura);
+  //glEnable(GL_TEXTURE_2D);
 glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 
@@ -160,7 +159,8 @@ void drawScene(){
   //glUniform1f(location, alpha );
   shader->BindValue("alpha", alpha);
 	glPushMatrix();
-	gluLookAt(camera.eyeX, camera.eyeY, camera.eyeZ, camera.lookX, camera.lookY, camera.lookZ, 0, 0, 1/*sideX, sideY, sideZ*/);      // move and aim camera
+	camera.doCamera();
+	//gluLookAt(camera.eyeX, camera.eyeY, camera.eyeZ, camera.lookX, camera.lookY, camera.lookZ, 0, 0, 1/*sideX, sideY, sideZ*/);      // move and aim camera
 		//glTranslatef(0, 0, -50);
 	//glRotatef(r*10, lookX, lookY, lookZ);
 		glCallList(board);
@@ -178,7 +178,7 @@ void display(){
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// process the camera
-	camera.doCamera();
+	//camera.doCamera();
 
 	// draw the scene
 	drawScene();
@@ -229,11 +229,13 @@ void specialKeyUp(int key, int mx, int my){
 void processMouseActiveMotion(int x, int y){
 
 	controls->processMouseActiveMotion(x, y);
+	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
 }
 // adjust camera pitch and yaw (when mouse buttons are idle)
 void processMousePassiveMotion(int x, int y){
 
 	controls->processMousePassiveMotion(x,y);
+	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
 }
 
 
@@ -278,6 +280,8 @@ int main(int argc, char** argv){
 	screenWidth = glutGet(GLUT_SCREEN_WIDTH);
 	screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
 	glutWarpPointer(screenWidth / 2, screenHeight / 2);         // center the mouse
+
+
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc (keydown);
 	glutKeyboardUpFunc (keyup);                                 // function is called when a 'normal' key is let up
