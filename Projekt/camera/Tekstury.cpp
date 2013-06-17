@@ -9,15 +9,15 @@
 
 
 
-Tekstury::Tekstury(void)
+Tekstura::Tekstura(void)
 {
 }
 
 
-Tekstury::~Tekstury(void)
+Tekstura::~Tekstura(void)
 {
 }
-int Tekstury::LoadGLTexture(char *plik)
+int Tekstura::LoadGLTexture(char *plik)
 {
   unsigned int Texture;
   FILE* img = NULL;

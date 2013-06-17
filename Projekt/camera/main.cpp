@@ -30,11 +30,10 @@ static int screenWidth, screenHeight;
 
 
 
-GLUquadricObj *g_texturedObject   = NULL;
+//GLUquadricObj *g_texturedObject   = NULL;
 bool freemove = true;    // Fly?
 float alpha=0.5;
 int phase=-1;
-SYSTEMTIME LastTimeGot;
 float time=0;
 
 float rotation = 0.0f;
@@ -48,7 +47,7 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 
-Tekstury tekstury[3];
+Tekstura tekstury[3];
 
 
 ControlsGLUT* controls = new ControlsGLUT();
@@ -116,6 +115,7 @@ void processMouse(int button, int state, int x, int y) {
 
 int getTime()
 {
+	static SYSTEMTIME LastTimeGot;
 	SYSTEMTIME newTime;
 	GetSystemTime(&newTime);
 	FILETIME fNew, fLast;
@@ -291,13 +291,13 @@ int main(int argc, char** argv){
   glColorMaterial ( GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   //// tworzy obiekt powierzchni generuj¹cy wspó³rzêdne tekstury
-  g_texturedObject = gluNewQuadric();
+  static GLUquadricObj *g_texturedObject = gluNewQuadric();
   gluQuadricTexture(g_texturedObject, GL_TRUE);
 	  // wczytujemy i ustawiamy tekstury
   //tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
-  tekstury[1] = Tekstury("mosaicwindowgp9.bmp");
+  tekstury[1] = Tekstura("mosaicwindowgp9.bmp");
   //tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
-  tekstury[0] = Tekstury("earth_sphere.bmp");
+  tekstury[0] = Tekstura("earth_sphere.bmp");
 	InitShader();
 	generateScene();
 	glutMainLoop();
