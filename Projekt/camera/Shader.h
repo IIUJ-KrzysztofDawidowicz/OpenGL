@@ -84,7 +84,7 @@ class Shader
 	  glUseProgram(shader_program);
 	}
 public:
-
+	Shader() {}
 	Shader(char* vertexShaderFile, char* fragmentShaderFile)
 	{
 		GLuint vertex_shader = MakeVertexShader(vertexShaderFile);

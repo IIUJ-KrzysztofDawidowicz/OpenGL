@@ -18,6 +18,8 @@ using namespace std;
 #include "ControlsGLUT.h"
 #include <string>
 #include "Shader.h"
+#include "ManagerTekstur.h"
+#include "ShaderManager.h"
 
 using std::string;
 
@@ -47,14 +49,16 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 
-Tekstura tekstury[3];
+//Tekstura tekstury[3];
+ManagerTekstur tekstury;
+ShaderManager shadery;
 ControlsGLUT* controls = new ControlsGLUT(&screenWidth, &screenHeight);;
 Camera camera = Camera(controls, &screenWidth, &screenHeight);
 
 //GLuint tekstura[3];
 
 
-Shader* shader;
+//Shader* shader;
 
 void error()
 {
@@ -71,9 +75,12 @@ void error()
 bool InitShader() 
 {
 
-	shader = new Shader("krzysztof.vert", "krzysztof.frag");
-  shader->BindValue("texture1", 0);
-  shader->BindValue("texture2", 1);
+	//shader = new Shader("krzysztof.vert", "krzysztof.frag");
+	shadery.Dodaj(Shader("krzysztof.vert", "krzysztof.frag"), "main");
+  //shader->BindValue("texture1", 0);
+  //shader->BindValue("texture2", 1);
+	shadery["main"].BindValue("texture1", 0);
+	shadery["main"].BindValue("texture2", 1);
   //glActiveTexture(GL_TEXTURE0);
   ////glBindTexture(GL_TEXTURE_2D, tekstura[0]);
   //glBindTexture(GL_TEXTURE_2D, tekstury[0].tekstura);
@@ -94,7 +101,9 @@ glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 // ----------------------------------------------------------------------------+
 void CleanUpShaders() {
   glUseProgram(0);
-  shader->Delete();
+  shadery.UsunWszystko();
+  //shader->Delete();
+  //shadery["main"].Delete();
 }
 
 // ----------------------------------------------------------------------------+
@@ -154,10 +163,12 @@ void drawScene(){
 
   //GLuint location = glGetUniformLocation(shader->shader_program,"rotation");
   //glUniform1f(location, rotation );
-  shader->BindValue("rotation", rotation);
+  //shader->BindValue("rotation", rotation);
   //location = glGetUniformLocation(shader->shader_program,"alpha");
   //glUniform1f(location, alpha );
-  shader->BindValue("alpha", alpha);
+  //shader->BindValue("alpha", alpha);
+  shadery["main"].BindValue("rotation", rotation);
+  shadery["main"].BindValue("alpha", alpha);
 	glPushMatrix();
 	camera.doCamera();
 	//gluLookAt(camera.eyeX, camera.eyeY, camera.eyeZ, camera.lookX, camera.lookY, camera.lookZ, 0, 0, 1/*sideX, sideY, sideZ*/);      // move and aim camera
@@ -299,9 +310,11 @@ int main(int argc, char** argv){
   gluQuadricTexture(g_texturedObject, GL_TRUE);
 	  // wczytujemy i ustawiamy tekstury
   //tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
-  tekstury[1] = Tekstura("mosaicwindowgp9.bmp");
   //tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
-  tekstury[0] = Tekstura("earth_sphere.bmp");
+  //tekstury[0] = Tekstura("earth_sphere.bmp");
+  //tekstury[1] = Tekstura("mosaicwindowgp9.bmp");
+  tekstury.Dodaj(Tekstura("earth_sphere.bmp"), "earth_sphere");
+  tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp"), "mosaicwindow");
 	InitShader();
 	generateScene();
 	glutMainLoop();
