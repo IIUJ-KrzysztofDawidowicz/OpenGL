@@ -50,8 +50,8 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 
 
 //Tekstura tekstury[3];
-ManagerTekstur tekstury;
-ShaderManager shadery;
+ManagerTekstur tekstury = ManagerTekstur::getInstance();
+ShaderManager shadery = ShaderManager::getInstance();
 ControlsGLUT* controls = new ControlsGLUT(&screenWidth, &screenHeight);;
 Camera camera = Camera(controls, &screenWidth, &screenHeight);
 
