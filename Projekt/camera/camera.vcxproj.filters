@@ -97,10 +97,10 @@
     <None Include="krzysztof.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="blurShader.frag">
+    <None Include="blurShader.vert">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="blurShader.vert">
+    <None Include="blurShader.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

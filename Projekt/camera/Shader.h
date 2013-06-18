@@ -28,6 +28,8 @@ public:
 
 	void BindValue(const GLchar* name, const int value);
 
+	void BindValue(const GLchar* name, const GLuint value);
+
 	void Activate();
 
 	void Deactivate();
