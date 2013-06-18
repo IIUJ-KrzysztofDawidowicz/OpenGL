@@ -11,6 +11,7 @@ template <class T> class Manager
 {
 	map<string, T> mapa;
 	vector<T> lista;
+
 public:
 	Manager() 
 	{
@@ -37,7 +38,7 @@ public:
 	}
 
 	//Dodaje nowy element do managera. Zwraca indeks dodanego elementu.
-	int Dodaj(const T& t, const string nazwa)
+	int Dodaj(const T& t, const string& nazwa)
 	{
 		mapa.emplace(nazwa, t);
 		lista.push_back(t);

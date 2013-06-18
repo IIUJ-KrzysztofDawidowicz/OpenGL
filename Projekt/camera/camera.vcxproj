@@ -19,7 +19,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -80,6 +81,7 @@
     <ClCompile Include="GLee.c" />
     <ClCompile Include="kostka.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Tekstury.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +105,8 @@
     <ClInclude Include="wglext.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="blurShader.frag" />
+    <None Include="blurShader.vert" />
     <None Include="krzysztof.frag" />
     <None Include="krzysztof.vert" />
   </ItemGroup>

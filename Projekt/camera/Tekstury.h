@@ -14,10 +14,10 @@ public:
 	}
 	~Tekstura(void);
 	void Bind(GLenum texture = GL_TEXTURE0)
-{
-	glActiveTexture(texture);
-	glBindTexture(GL_TEXTURE_2D, tekstura);
-  glEnable(GL_TEXTURE_2D);
-}
+	{
+		glActiveTexture(texture);
+		glBindTexture(GL_TEXTURE_2D, tekstura);
+		glEnable(GL_TEXTURE_2D);
+	}
 };
 

@@ -30,6 +30,7 @@ const double pi = 3.141592653589793233297;        // pi
 
 static int screenWidth, screenHeight;
 
+const bool QUIT_ON_ERROR = false;
 
 
 //GLUquadricObj *g_texturedObject   = NULL;
@@ -66,34 +67,76 @@ void error()
   if(err != 0)
   {
 	  MessageBox(NULL, (const char*)gluErrorString(err), "B³¹d", MB_OK);
+	  if(QUIT_ON_ERROR) exit(-1);
   }
 }
 // ----------------------------------------------------------------------------+
+
+void InitTekstury()
+{
+	tekstury.Dodaj(Tekstura("earth_sphere.bmp"), "earth_sphere");
+	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp"), "mosaicwindow");
+	tekstury[0].Bind();
+	tekstury[1].Bind(GL_TEXTURE1);
+	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+	glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
+}
+
+class FullFrameTexture: public Tekstura
+{
+};
+
+class FrameBuffer
+{
+	GLuint fbo, fbo_texture, rbo_depth;
+
+	void InitFramebuffer()
+	{
+		/* Texture */
+		glActiveTexture(GL_TEXTURE0);
+		glGenTextures(1, &fbo_texture);
+		glBindTexture(GL_TEXTURE_2D, fbo_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glBindTexture(GL_TEXTURE_2D, 0);
+ 
+		/* Depth buffer */
+		glGenRenderbuffersEXT(1, &rbo_depth);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo_depth);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, screenWidth, screenWidth);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+ 
+		/* Framebuffer to link everything together */
+		glGenFramebuffersEXT(1, &fbo);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, fbo_texture, 0);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo_depth);
+		GLenum status;
+		if ((status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		fprintf(stderr, "glCheckFramebufferStatus: error %p", status);
+		return;
+		}
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	}
+};
+
 
 
 
 bool InitShader() 
 {
-
-	//shader = new Shader("krzysztof.vert", "krzysztof.frag");
-	shadery.Dodaj(Shader("krzysztof.vert", "krzysztof.frag"), "main");
-  //shader->BindValue("texture1", 0);
-  //shader->BindValue("texture2", 1);
-	shadery["main"].BindValue("texture1", 0);
-	shadery["main"].BindValue("texture2", 1);
-  //glActiveTexture(GL_TEXTURE0);
-  ////glBindTexture(GL_TEXTURE_2D, tekstura[0]);
-  //glBindTexture(GL_TEXTURE_2D, tekstury[0].tekstura);
-  tekstury[0].Bind();
-  tekstury[1].Bind(GL_TEXTURE1);
-  //glActiveTexture(GL_TEXTURE1);
-  ////glBindTexture(GL_TEXTURE_2D, tekstura[1]);
-  //glBindTexture(GL_TEXTURE_2D, tekstury[1].tekstura);
-  //glEnable(GL_TEXTURE_2D);
-glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
-
-  error();
+	Shader main = Shader("krzysztof.vert", "krzysztof.frag");
+	shadery.Dodaj(main, "main");
+	main.Activate();
+	main.BindValue("texture1", 0);
+	main.BindValue("texture2", 1);
+	Shader postproc1 = Shader("blurShader.vert", "blurShader.frag");
+  //error();
+	shadery.Dodaj(postproc1, "postproc1");
+	main.Activate();
 
   return true;
 }
@@ -313,9 +356,8 @@ int main(int argc, char** argv){
   //tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
   //tekstury[0] = Tekstura("earth_sphere.bmp");
   //tekstury[1] = Tekstura("mosaicwindowgp9.bmp");
-  tekstury.Dodaj(Tekstura("earth_sphere.bmp"), "earth_sphere");
-  tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp"), "mosaicwindow");
 	InitShader();
+	InitTekstury();
 	generateScene();
 	glutMainLoop();
 	return 0;

@@ -30,6 +30,9 @@
     <ClCompile Include="camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gl.h">
@@ -93,6 +96,12 @@
     </None>
     <None Include="krzysztof.vert">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="blurShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="blurShader.vert">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>
