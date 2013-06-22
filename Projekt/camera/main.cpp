@@ -85,39 +85,6 @@ void InitTekstury()
 GLuint fbo, fbo_texture, rbo_depth;
 Shader postProcShader;
 
-void InitFramebuffer()
-{
-	glActiveTexture(GL_TEXTURE2);
-	glGenTextures(1, &fbo_texture);
-	glBindTexture(GL_TEXTURE_2D, fbo_texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glBindTexture(GL_TEXTURE_2D, 0);
- 
-	/* Depth buffer */
-	glGenRenderbuffersEXT(1, &rbo_depth);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo_depth);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, screenWidth, screenWidth);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
- 
-	/* Framebuffer to link everything together */
-	glGenFramebuffersEXT(1, &fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, fbo_texture, 0);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo_depth);
-	GLenum status;
-	if ((status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-	fprintf(stderr, "glCheckFramebufferStatus: error %p", status);
-	return;
-	}
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-}
-
-
-
 
 bool InitShader() 
 {
@@ -172,20 +139,18 @@ int getTime()
 	return wynik;
 }
 
+void SetLightning()
+{  
+	glLightfv (GL_LIGHT0, GL_SPECULAR, SpecularLight); 
+	glLightfv (GL_LIGHT0, GL_DIFFUSE, DiffuseLight); 
+	glLightfv (GL_LIGHT0, GL_AMBIENT, AmbientLight); 
+	glLightfv (GL_LIGHT0, GL_POSITION, LightPosition);
+}
 
-void drawScene(){
-		int timeInterval = getTime();
+void AnimationGlobals()
+{
+  int timeInterval = getTime();
 	time+=timeInterval;
-
-  glClearColor(0.5f, 0.5f, 0.5f, 1.0f);  // kolor tla
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-  glLoadIdentity();
-  
-  glLightfv (GL_LIGHT0, GL_SPECULAR, SpecularLight); 
-  glLightfv (GL_LIGHT0, GL_DIFFUSE, DiffuseLight); 
-  glLightfv (GL_LIGHT0, GL_AMBIENT, AmbientLight); 
-  glLightfv (GL_LIGHT0, GL_POSITION, LightPosition);
 
   if(controls->przesuwanie) 
 	  rotation = rotation + 0.05*timeInterval;   // zwieksza licznik kata obrotu
@@ -195,37 +160,55 @@ void drawScene(){
 	  if(alpha>2 || alpha<-1)
 		  phase=-phase; 
   }
-  /*if (rotation >= 360.0f)
-	rotation = 0.0f;*/
-
-  //GLuint location = glGetUniformLocation(shader->shader_program,"rotation");
-  //glUniform1f(location, rotation );
-  //shader->BindValue("rotation", rotation);
-  //location = glGetUniformLocation(shader->shader_program,"alpha");
-  //glUniform1f(location, alpha );
-  //shader->BindValue("alpha", alpha);
-  shadery["main"].Activate();
-  shadery["main"].BindValue("rotation", rotation);
-  shadery["main"].BindValue("alpha", alpha);
-  tekstury[0].Bind();
-  tekstury[1].Bind();
-	glPushMatrix();
-	camera.doCamera();
-	//gluLookAt(camera.eyeX, camera.eyeY, camera.eyeZ, camera.lookX, camera.lookY, camera.lookZ, 0, 0, 1/*sideX, sideY, sideZ*/);      // move and aim camera
-		//glTranslatef(0, 0, -50);
-	//glRotatef(r*10, lookX, lookY, lookZ);
-		glCallList(board);
-		//glTranslatef(0, 0, 200);
-		//glCallList(board);
-	glPopMatrix();
 }
 
+void drawTheCube()
+{
+	//Set up
+	AnimationGlobals();
+	glLoadIdentity();
+	SetLightning();
+	//int shaderId;
+	const string shaderName = "main";
+	Shader cubeShader = shadery[shaderName];
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	cubeShader.Activate();
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	//glUseProgram(cubeShader.getId());
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	cubeShader.BindValue("rotation", rotation);
+	cubeShader.BindValue("alpha", alpha);
+	tekstury[0].Bind();
+	tekstury[1].Bind();
+	glPushMatrix();
 
+	//Draw
+	camera.doCamera();
+	glCallList(board);
+
+	//Clean up
+	glPopMatrix();
+	//shadery["main"].Deactivate();
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	tekstury.UnbindAll();
+}
+
+void printText(string text)
+{
+	static void* font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+	int length = text.length();
+	for(int i = 0; i<length; ++i)
+	{
+		glutBitmapCharacter(font, text[i]);
+	}
+}
 
 // this function is called by GLUT once per frame
 void display(){
 
 	// Clear the screen
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);  // kolor tla
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// process the camera
@@ -233,7 +216,8 @@ void display(){
 
 	// draw the scene
 	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-	drawScene();
+	drawTheCube();
+	//printText("Test");
 	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 		//Wylaczenie stanow

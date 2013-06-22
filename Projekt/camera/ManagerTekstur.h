@@ -11,4 +11,10 @@ public:
 		static ManagerTekstur instancja;
 		return instancja;
 	}
+
+	void UnbindAll()
+	{
+		for(int i = 0; i<lista.size(); ++i)
+			lista[i].Unbind();
+	}
 };

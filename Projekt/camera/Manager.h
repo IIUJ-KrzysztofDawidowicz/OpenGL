@@ -9,6 +9,7 @@ using std::vector;
 
 template <class T> class Manager
 {
+protected:
 	map<string, T> mapa;
 	vector<T> lista;
 
@@ -25,7 +26,10 @@ public:
 		mapa = map<string, T>();
 		lista = vector<T>(initSize);
 	}
-	~Manager() {}
+	~Manager() 
+	{
+		UsunWszystko();
+	}
 
 	T& operator [](const int i)
 	{

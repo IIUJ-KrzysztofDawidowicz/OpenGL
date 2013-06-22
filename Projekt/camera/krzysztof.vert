@@ -13,7 +13,7 @@ void main()
 	gl_Position = ftransform();		
 	//gl_Position.xyz = (v*gl_ModelViewMatrix).xyz*(1-displacement*0.25);
 	//gl_Position = v*gl_ModelViewMatrix;
-	//gl_Position.xyz += displacement_direction*(-displacement*0.25);
+	gl_Position.xyz += displacement_direction*(-displacement*0.25);
 	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_TexCoord[0].s +=sin(rotation); 
+	//gl_TexCoord[0].s +=sin(rotation); 
 }

@@ -6,12 +6,6 @@ class Tekstura
 {
 	static int LoadGLTexture(char *plik);
 	GLenum tekstureEnum;
-	void Bind(GLenum texture)
-	{
-		glActiveTexture(texture);
-		glBindTexture(GL_TEXTURE_2D, tekstura);
-		glEnable(GL_TEXTURE_2D);
-	}
 public:
 	GLuint tekstura;
 	Tekstura(void);
@@ -24,7 +18,16 @@ public:
 	~Tekstura(void);
 	void Bind()
 	{
-		Bind(tekstureEnum);
+		glActiveTexture(tekstureEnum);
+		glBindTexture(GL_TEXTURE_2D, tekstura);
+		glEnable(GL_TEXTURE_2D);
+	}
+
+	void Unbind()
+	{
+		glActiveTexture(tekstureEnum);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDisable(GL_TEXTURE_2D);
 	}
 };
 
