@@ -79,31 +79,24 @@ void error()
 
 void InitTekstury()
 {
-	tekstury.Dodaj(Tekstura("earth_sphere.bmp", GL_TEXTURE0), "earth_sphere");
-	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp", GL_TEXTURE1), "mosaicwindow");
-	tekstury[0].Bind();
-	tekstury[1].Bind();
+	tekstury.Dodaj(Tekstura("earth_sphere.bmp",		GL_TEXTURE0), "earth_sphere");
+	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp",	GL_TEXTURE1), "mosaicwindow");
+	tekstury.Dodaj(Tekstura("octant6_8.bmp",		GL_TEXTURE2), "octant");
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 	glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 }
 
-GLuint fbo, fbo_texture, rbo_depth;
-Shader postProcShader;
 
-
-bool InitShader() 
+bool InitShaders() 
 {
-	Shader cube = Shader("krzysztof.vert", "krzysztof.frag");
+	Shader cube = Shader("cube.vert", "cube.frag");
+	Shader sphere = Shader("sphere.vert", "sphere.frag");
 	shadery.Dodaj(cube, "main");
 	shadery.Dodaj(cube, "cube");
+	shadery.Dodaj(sphere, "sphere");
 	cube.Activate();
 	cube.BindValue("texture1", 0);
 	cube.BindValue("texture2", 1);
-	postProcShader = Shader("blurShader.vert", "blurShader.frag");
-	//postProcShader.BindValue("texture", fbo_texture);
-  //error();
-	//shadery.Dodaj(postproc1, "postproc1");
-	cube.Activate();
 
   return true;
 }
@@ -259,33 +252,6 @@ void display(){
 	
 	glTranslatef(10, 0, 0);
 	drawSphere();
-		//Wylaczenie stanow
-//glDisable(GL_DEPTH_TEST);
-////glDepthMask(false);
-//glDisable(GL_CULL_FACE);
-//
-////Wylaczenie macierzy
-//glMatrixMode(GL_PROJECTION);
-//glLoadIdentity();
-//glMatrixMode(GL_MODELVIEW);
-//glLoadIdentity();
-//	glClearColor(0.0, 0.0, 0.0, 1.0);
-//  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-// 
-//  postProcShader.Activate();
-//glActiveTexture( GL_TEXTURE2 );
-//  glBindTexture(GL_TEXTURE_2D, fbo_texture);
-//  postProcShader.BindValue("texture", fbo_texture);
-//  postProcShader.BindValue("rotation", rotation);
-//glBegin(GL_QUADS);
-//
-//glVertex3f(-1.0f,-1.0f, -1.0f);
-//glVertex3f( 1.0f,-1.0f, -1.0f);
-//glVertex3f( 1.0f, 1.0f, -1.0f);
-//glVertex3f(-1.0f, 1.0f, -1.0f);
-//
-//glEnd();
-	// swap the buffers and tell GLUT to call the display function again
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -300,14 +266,6 @@ void Exit()
 // reshape is called (once) when the window is created or resized
 // it defines the shape of the viewport and initializes the graphics matrices
 void reshape (int w, int h){
-	// Rescale FBO and RBO as well
-  glBindTexture(GL_TEXTURE_2D, fbo_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
- 
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, rbo_depth);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, screenWidth, screenHeight);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 	glViewport(0, 0, (GLint) w, (GLint) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -396,16 +354,7 @@ int main(int argc, char** argv){
   glEnable(GL_DEPTH_TEST);
   glColorMaterial ( GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  //// tworzy obiekt powierzchni generuj¹cy wspó³rzêdne tekstury
-  /*static GLUquadricObj *g_texturedObject = gluNewQuadric();
-  gluQuadricTexture(g_texturedObject, GL_TRUE);*/
-	  // wczytujemy i ustawiamy tekstury
-  //tekstura[1] = Tekstury::LoadGLTexture("mosaicwindowgp9.bmp");
-  //tekstura[0] = Tekstury::LoadGLTexture("earth_sphere.bmp");
-  //tekstury[0] = Tekstura("earth_sphere.bmp");
-  //tekstury[1] = Tekstura("mosaicwindowgp9.bmp");
-	//InitFramebuffer();
-	InitShader();
+	InitShaders();
 	InitTekstury();
 	generateScene();
 	glutMainLoop();
@@ -440,109 +389,32 @@ void LIGHTING ( void )
 	///////// Light variables /////////////
 	static GLfloat LIGHT_AMBIENCE[]  = { 0.33, 0.34, 0.45, 1.0 };
 	static GLfloat LIGHT_DIFFUSION[] = { 0.91, 0.81, 0.81, 1.0 };
-	static GLfloat LIGHT_POSITION[]  = { 7.51, 0.00, 0.00, 1.0 };
-	static GLfloat redDiffuseMaterial[] = {1.0, 0.0, 0.0}; //set the material to red
-	static GLfloat whiteSpecularMaterial[] = {1.0, 1.0, 1.0}; //set the material to white
-	static GLfloat greenEmissiveMaterial[] = {0.0, 1.0, 0.0}; //set the material to green
+	static GLfloat LIGHT_POSITION[]  = { -7.51, 0.00, 0.00, 0.5 };
+	static GLfloat DiffuseMaterial[] = {1.0, 0.0, 0.0}; //set the material to red
+	static GLfloat SpecularMaterial[] = {1.0, 1.0, 1.0}; //set the material to white
+	static GLfloat EmissiveMaterial[] = {0.0, 1.0, 0.0}; //set the material to green
 	static GLfloat whiteSpecularLight[] = {1.0, 1.0, 1.0}; //set the light specular to white
-	static GLfloat blackAmbientLight[] = {0.0, 0.0, 0.0}; //set the light ambient to black
-	static GLfloat whiteDiffuseLight[] = {1.0, 1.0, 1.0}; //set the diffuse light to white
-	static GLfloat blankMaterial[] = {0.0, 0.0, 0.0}; //set the diffuse light to white
+	static GLfloat AmbientLight[] = {0.125, 0.125, 0.125}; //set the light ambient to black
+	static GLfloat DiffuseLight[] = {1.0, 1.0, 1.0}; //set the diffuse light to white
+	static GLfloat blankMaterial[] = {1.0, 1.0, 1.0}; //set the diffuse light to white
 	static GLfloat mShininess = 128; //set the shininess of the material
 	glLightfv ( GL_LIGHT0, GL_POSITION, LIGHT_POSITION );
 	glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0);
 	glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR); 
+	glLightModelfv ( GL_LIGHT_MODEL_AMBIENT, AmbientLight );
 	glLightfv ( GL_LIGHT0, GL_POSITION, LIGHT_POSITION );
 	glLightfv ( GL_LIGHT0, GL_SPECULAR,  whiteSpecularLight);
-	/*glLightModelfv ( GL_LIGHT_MODEL_AMBIENT, whiteDiffuseLight );
 	glLightfv(GL_LIGHT0, GL_AMBIENT, LIGHT_AMBIENCE);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteDiffuseLight);*/
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, DiffuseLight);
 
 	glEnable ( GL_LIGHTING );
 	glEnable ( GL_LIGHT0 );
 	glEnable(GL_SHININESS);
 		
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, whiteSpecularMaterial);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &mShininess);
-}
-
-
-void DrawSpheres()
-{
-	const float ZOOM = -9.0;
-		glEnable ( GL_COLOR_MATERIAL );
-		glEnable( GL_DEPTH_TEST) ;
-		glEnable( GL_TEXTURE_2D ) ;
-		///////////////////////////////////////////////////////////////////////////////////
-		//glClearColor ( 0.0, 0.0, 0.0, 0.0 );
-		glEnable ( GL_CULL_FACE );
-	/*	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glLoadIdentity();*/
-		///////////////////////////////////////////////////////////////////////////////////
-		glPushMatrix();
-		glTranslatef ( 0.0, 0.0, ZOOM );
-		glRotatef (cameraRotationAngle*2, 0,1,0);
-
-		LIGHTING();
-		//draw first sphere
-		
-		
-	 //Typical Texture Generation Using Data From The Bitmap
-		tekstury[0].Bind();
-	/*glBindTexture(GL_TEXTURE_2D, texture[0]);*/
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		
-			glPushMatrix();
-			glRotatef(turnAngle, 0, 1, 0);
-			CREATE_SPHERE(1);
-			glPopMatrix();
-		
-	// Typical Texture Generation Using Data From The Bitmap
-	//glBindTexture(GL_TEXTURE_2D, texture[1]);
-			tekstury[1].Bind();
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-			//draw second sphere
-			glRotatef(turnAngle*3, 0, -1, 0);
-			glTranslatef(3,0,0);
-			glRotatef(-turnAngle*3, 0,-1, 0);
-			glPushMatrix();
-			glRotatef(turnAngle*3, 0, 1, 0);
-			CREATE_SPHERE(0.5);
-			glPopMatrix();
-		
-			//draw third sphere
-			
-			
-	// Typical Texture Generation Using Data From The Bitmap
-	//glBindTexture(GL_TEXTURE_2D, texture[2]);
-			tekstury[0].Bind();
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-			glRotatef(turnAngle*4, 1, 0, -1);
-			glTranslatef(0,1,0);
-			glRotatef(-turnAngle*4, 1, 0, -1);
-			glPushMatrix();
-			glRotatef(turnAngle*5, 0, 1, 0);
-			CREATE_SPHERE(0.25);
-			glPopMatrix();
-		/*float currentSizeRatio=1;
-		for(int i=0; i<nSpheres;i++)
-		{
-			glRotatef(turnAngle, 0, 1, 0);
-			glPushMatrix();
-			glRotatef(turnAngle, 1, 1, 0);
-			CREATE_SPHERE(currentSizeRatio);
-			glPopMatrix();
-			glTranslatef ( displacement*currentSizeRatio, 0, 0 );
-			currentSizeRatio*=sizeRatio;
-		}*/
-		//CREATE_SPHERE();
-		glPopMatrix();
-		
-		///////////////////////////////////////////////////////////////////////////////////
-		glutSwapBuffers();
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, SpecularMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, DiffuseMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, EmissiveMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &mShininess);
 }
 
 
@@ -552,40 +424,31 @@ void drawSphere()
 	return;*/
 	const float ZOOM = -9.0;
 		glEnable ( GL_COLOR_MATERIAL );
-		glEnable( GL_DEPTH_TEST) ;
-		glEnable( GL_TEXTURE_2D ) ;
-		///////////////////////////////////////////////////////////////////////////////////
-		//glClearColor ( 0.0, 0.0, 0.0, 0.0 );
+		glEnable ( GL_DEPTH_TEST) ;
+		glEnable ( GL_TEXTURE_2D ) ;
 		glEnable ( GL_CULL_FACE );
-		//glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		//glLoadIdentity();
 	tekstury[0].Bind();
 	tekstury[1].Bind();
+	tekstury[2].Bind();
 
-					glPushMatrix();
-		//glTranslatef ( 0.0, 0.0, ZOOM );
+	Shader shader = shadery["sphere"];
+	shader.Activate();
+	shader.BindValue("rotation", rotation);
+	shader.BindValue("alpha", alpha);
+	glPushMatrix();
 		glRotatef (cameraRotationAngle*2, 0,1,0);
 
 		LIGHTING();
 		//draw first sphere
 		
-		
-	 //Typical Texture Generation Using Data From The Bitmap
-		tekstury[0].Bind();
-	/*glBindTexture(GL_TEXTURE_2D, texture[0]);*/
-	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		shader.BindValue("texture1",0);
 		
 			glPushMatrix();
 			glRotatef(turnAngle, 0, 1, 0);
 			CREATE_SPHERE(1);
 			glPopMatrix();
 		
-	// Typical Texture Generation Using Data From The Bitmap
-	//glBindTexture(GL_TEXTURE_2D, texture[1]);
-			tekstury[1].Bind();
-	/*glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);*/
+			shader.BindValue("texture1",1);
 			//draw second sphere
 			glRotatef(turnAngle*3, 0, -1, 0);
 			glTranslatef(3,0,0);
@@ -597,12 +460,8 @@ void drawSphere()
 		
 			//draw third sphere
 			
-			
-	// Typical Texture Generation Using Data From The Bitmap
-	//glBindTexture(GL_TEXTURE_2D, texture[2]);
-			tekstury[0].Bind();
-	/*glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);*/
+			shader.BindValue("texture1",2);
+
 			glRotatef(turnAngle*4, 1, 0, -1);
 			glTranslatef(0,1,0);
 			glRotatef(-turnAngle*4, 1, 0, -1);
@@ -623,4 +482,5 @@ void drawSphere()
 		}*/
 		//CREATE_SPHERE();
 		glPopMatrix();
+		shader.Deactivate();
 }

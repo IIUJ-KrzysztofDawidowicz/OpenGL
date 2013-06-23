@@ -107,8 +107,10 @@
   <ItemGroup>
     <None Include="blurShader.frag" />
     <None Include="blurShader.vert" />
-    <None Include="krzysztof.frag" />
-    <None Include="krzysztof.vert" />
+    <None Include="cube.frag" />
+    <None Include="cube.vert" />
+    <None Include="sphere.frag" />
+    <None Include="sphere.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

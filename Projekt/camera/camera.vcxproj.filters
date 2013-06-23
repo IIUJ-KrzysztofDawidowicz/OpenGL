@@ -91,16 +91,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="krzysztof.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="krzysztof.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="blurShader.vert">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="blurShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cube.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="cube.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="sphere.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sphere.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
