@@ -90,7 +90,7 @@ Shader::Shader(char* vertexShaderFile, char* fragmentShaderFile)
 }
 Shader::~Shader()
 {
-	Delete();
+	//Delete(); Powoduje delecjê przy znikniêciu tymczasowych obiektów.
 }
 
 GLuint Shader::getId()

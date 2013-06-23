@@ -11,4 +11,16 @@ public:
 		static ShaderManager instance;
 		return instance;
 	}
+	~ShaderManager()
+	{
+		UsunWszystko();
+	}
+
+	void UsunWszystko()
+	{
+		for(int i=0; i<lista.size(); ++i)
+			lista[i].Delete();
+		lista.clear();
+		mapa.clear();
+	}
 };
