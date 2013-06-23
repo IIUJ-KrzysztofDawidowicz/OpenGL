@@ -27,7 +27,7 @@ void main (void)
 	tex1 = naprawTeksture(tex1); //Z jakiegoœ powodu w tej teksturze s¹ prestawione kolory
 
 
-	//float diffuse_value = calculateDiffuseValue(norm);
+	float diffuse_value = calculateDiffuseValue(norm);
 	vec4 diffuse_color = calculateDiffuseColor(tex1, tex2);
 	vec4 specular_color = calculateSpecularColor(norm);
 	vec4 ambient_color = calculateAmbientColor();
@@ -40,7 +40,7 @@ void main (void)
 	}
 	else
 	{
-		gl_FragColor = diffuse_color;
+		gl_FragColor = diffuse_color + ambient_color;
 	}
 	
 }
@@ -67,7 +67,7 @@ vec4 calculateDiffuseColor(vec4 tex1, vec4 tex2)
 
 vec4 calculateDiffuseColor(vec4 tex1, vec4 tex2, float diffuse_value)
 {
-	return tex1*alpha+tex2*(1-alpha)*diffuse_value;
+	return calculateDiffuseColor(tex1, tex2)*diffuse_value;
 }
 
 vec4 calculateSpecularColor(vec3 norm)
@@ -77,7 +77,7 @@ vec4 calculateSpecularColor(vec3 norm)
 
 vec4 calculateAmbientColor()
 {
-	return 0.25 * alpha * gl_FrontMaterial.ambient * gl_LightSource[0].ambient + gl_LightModel.ambient * gl_FrontMaterial.ambient;
+	return 0.125 * gl_FrontMaterial.ambient * gl_LightSource[0].ambient + gl_LightModel.ambient * gl_FrontMaterial.ambient;
 }
 
 bool isFragmentBlue(vec4 tex)

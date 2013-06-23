@@ -93,16 +93,17 @@ Shader postProcShader;
 
 bool InitShader() 
 {
-	Shader main = Shader("krzysztof.vert", "krzysztof.frag");
-	shadery.Dodaj(main, "main");
-	main.Activate();
-	main.BindValue("texture1", 0);
-	main.BindValue("texture2", 1);
+	Shader cube = Shader("krzysztof.vert", "krzysztof.frag");
+	shadery.Dodaj(cube, "main");
+	shadery.Dodaj(cube, "cube");
+	cube.Activate();
+	cube.BindValue("texture1", 0);
+	cube.BindValue("texture2", 1);
 	postProcShader = Shader("blurShader.vert", "blurShader.frag");
 	//postProcShader.BindValue("texture", fbo_texture);
   //error();
 	//shadery.Dodaj(postproc1, "postproc1");
-	main.Activate();
+	cube.Activate();
 
   return true;
 }
@@ -198,10 +199,9 @@ void drawTheCube()
 {
 	//Set up
 	AnimationGlobals();
-	glLoadIdentity();
 	SetLightning();
 	//int shaderId;
-	const string shaderName = "main";
+	const string shaderName = "cube";
 	Shader cubeShader = shadery[shaderName];
 	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
 	cubeShader.Activate();
@@ -212,7 +212,6 @@ void drawTheCube()
 	cubeShader.BindValue("alpha", alpha);
 	tekstury[0].Bind();
 	tekstury[1].Bind();
-	camera.doCamera();
 	glPushMatrix();
 
 	LIGHTING();
@@ -250,8 +249,15 @@ void display(){
 
 	// draw the scene
 	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	glLoadIdentity();
+	camera.doCamera();
+	glRotatef(-90, 0, 0, 1);
+	glTranslatef(5, 0, 0);
+	//glRotatef(-90, 1, 0, 0);
+	//glRotatef(-90, 0, 1, 0);
 	drawTheCube();
 	
+	glTranslatef(10, 0, 0);
 	drawSphere();
 		//Wylaczenie stanow
 //glDisable(GL_DEPTH_TEST);
@@ -555,10 +561,9 @@ void drawSphere()
 		//glLoadIdentity();
 	tekstury[0].Bind();
 	tekstury[1].Bind();
-	glTranslatef(10, 0, 0);
 
 					glPushMatrix();
-		glTranslatef ( 0.0, 0.0, ZOOM );
+		//glTranslatef ( 0.0, 0.0, ZOOM );
 		glRotatef (cameraRotationAngle*2, 0,1,0);
 
 		LIGHTING();

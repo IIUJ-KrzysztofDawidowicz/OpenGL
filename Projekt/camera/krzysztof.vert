@@ -25,16 +25,17 @@ void main()
 
 float calculateDisplacement(vec4 v)
 {
-	return sin(v.x * v.y * v.z * rotation);
+	//v = normalize(v);
+	float f = length(v);//v.x + v.y + v.z;
+	return sin(f * rotation);
 }
 
 vec3  calculateDisplacementDirection()
 {
-	vec3 twistedNormal = vertex_normal.yzx;
-	vec3 zeroVector = {0,0,0};
-	if(distance(vertex_normal, twistedNormal)>0.0625)
-		return cross(vertex_normal, twistedNormal);
-	return zeroVector;
+	vec3 twistedNormal = {1,0,0};
+	if(distance(vertex_normal, twistedNormal)<0.0625)
+		twistedNormal = vec3(0,1,0);
+	return cross(vertex_normal, twistedNormal);
 }
 
 
