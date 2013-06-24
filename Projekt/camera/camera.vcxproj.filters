@@ -110,4 +110,15 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="earth_sphere.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="mosaicwindowgp9.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="octant6_8.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

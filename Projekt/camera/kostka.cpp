@@ -5,13 +5,13 @@
 #if !defined KOSTKA
 #define KOSTKA
 
-GLfloat SpecularLight[] = {1,1,1};
-GLfloat DiffuseLight[] = {1,1,1};
-GLfloat AmbientLight[] = {1,1,1};
-GLfloat LightPosition[] = {0.5,0.5,1};
-GLfloat DiffuseMaterial[] = {1.0, 0.0, 0.0}; 
-GLfloat SpecularMaterial[] = {1.0, 1.0, 1.0}; 
-GLfloat mShininess = 120;
+//GLfloat SpecularLight[] = {1,1,1};
+//GLfloat DiffuseLight[] = {1,1,1};
+//GLfloat AmbientLight[] = {1,1,1};
+//GLfloat LightPosition[] = {0.5,0.5,1};
+//GLfloat DiffuseMaterial[] = {1.0, 0.0, 0.0}; 
+//GLfloat SpecularMaterial[] = {1.0, 1.0, 1.0}; 
+//GLfloat mShininess = 128;
 
 //Struktura dla danych per-vertex
 typedef struct Vertex
@@ -72,132 +72,130 @@ typedef struct Vertex
 GLvoid glDrawCube()                 // Draw A Cube
 {
 	
-	glColor3f(0.8f, 0.6f, 0.6f);     // lekko fioletowa
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, DiffuseMaterial);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, SpecularMaterial);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &mShininess);
+	//glColor3f(0.8f, 0.6f, 0.6f);     // lekko fioletowa
+	//glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, DiffuseMaterial);
+	//glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, SpecularMaterial);
+	//glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &mShininess);
 
+	static float size = 1.0f;
 
-
-Vertex data[] = 
+static Vertex data[] = 
 {
 	
 	
 
-	//    glBegin(GL_QUADS);          // Start Drawing Quads
-	//    // Front Face
-	//    glNormal3f( 0.0f, 0.0f, 1.0f);      // Normal Facing Forward
+	// Front Face
 	{
 		{-1.0f, -1.0f,  1.0f}, 
 		{0.0f, 0.0f, 1.0f},
 		{0.0f, 0.0f}
 	},
-	//    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
+	// Bottom Left Of The Texture and Quad
 	{
 		{1.0f, -1.0f,  1.0f},
 		{0.0f, 0.0f, 1.0f},
 		{0.0f, 1.0f}
 	},
-	//    glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
+	// Bottom Right Of The Texture and Quad
 	
 	{
 		{1.0f,  1.0f,  1.0f},
 		{0.0f, 0.0f, 1.0f},
 		{1.0f, 1.0f}
 	},
-	//    glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Top Right Of The Texture and Quad
+	// Top Right Of The Texture and Quad
 	{
 		{-1.0f,  1.0f,  1.0f},
 		{0.0f, 0.0f, 1.0f},
 		{1.0f, 0.0f}
 	},
-	//    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);  // Top Left Of The Texture and Quad
-	//    // Back Face
-	//    glNormal3f( 0.0f, 0.0f,-1.0f);      // Normal Facing Away
+	// Top Left Of The Texture and Quad
+	// Back Face
+	// Normal Facing Away
 	{
 		{-1.0f,  -1.0f,  -1.0f},
 		{0.0f, 0.0f,-1.0f},
 		{1.0f, 0.0f}
 	},
-	//    glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);  // Bottom Right Of The Texture and Quad
+	// Bottom Right Of The Texture and Quad
 	{
 		{-1.0f,  1.0f, -1.0f},	//vertex
 		{0.0f, 0.0f,-1.0f},		//normal
 		{1.0f, 1.0f}			//texture
 	},
-	//    glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);  // Top Right Of The Texture and Quad
+	// Top Right Of The Texture and Quad
 	{
 		{1.0f,  1.0f, -1.0f},	//vertex
 		{0.0f, 0.0f,-1.0f},		//normal
 		{0.0f, 1.0f}			//texture
 	},
-	//    glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);  // Top Left Of The Texture and Quad
+	// Top Left Of The Texture and Quad
 	{
 		{1.0f,  -1.0f, -1.0f},	//vertex
 		{0.0f, 0.0f,-1.0f},		//normal
 		{0.0f, 0.0f}			//texture
 	},
-	//    glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Bottom Left Of The Texture and Quad
-	//    // Top Face
-	//    glNormal3f( 0.0f, 1.0f, 0.0f);      // Normal Facing Up
+	// Bottom Left Of The Texture and Quad
+	// Top Face
+	// Normal Facing Up
 	{
 		{-1.0f,  1.0f, -1.0f},	//vertex
-		{ 0.0f, 1.0f, 0.0f},		//normal
+		{ 0.0f, 1.0f, 0.0f},	//normal
 		{0.0f, 1.0f}			//texture
 	},
-	//    glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);  // Top Left Of The Texture and Quad
+	// Top Left Of The Texture and Quad
 	{
 		{-1,  1,  1},	//vertex
 		{ 0, 1, 0},		//normal
 		{0, 0}			//texture
 	},
-	//    glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
+	// Bottom Left Of The Texture and Quad
 	{
 		{1,  1,  1},	//vertex
 		{ 0, 1, 0},		//normal
 		{1, 0}			//texture
 	},
-	//    glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
+	// Bottom Right Of The Texture and Quad
 	{
 		{1,  1,  -1},	//vertex
 		{ 0, 1, 0},		//normal
 		{1, 1}			//texture
 	},
-	//    glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);  // Top Right Of The Texture and Quad
-	//    // Bottom Face
-	//    glNormal3f( 0.0f,-1.0f, 0.0f);      // Normal Facing Down
+	// Top Right Of The Texture and Quad
+	// Bottom Face
+	// Normal Facing Down
 	{
 		{-1, -1, -1},	//vertex
-		{ 0, -1, 0},		//normal
+		{ 0, -1, 0},	//normal
 		{1, 1}			//texture
 	},
-	//    glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);  // Top Right Of The Texture and Quad
+	// Top Right Of The Texture and Quad
 	{
 		{1, -1, -1},	//vertex
-		{ 0, -1, 0},		//normal
+		{ 0, -1, 0},	//normal
 		{0, 1}			//texture
 	},
-	//    glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Top Left Of The Texture and Quad
+	// Top Left Of The Texture and Quad
 	{
-		{1, -1, 1},	//vertex
-		{ 0, -1, 0},		//normal
+		{1, -1, 1},		//vertex
+		{ 0, -1, 0},	//normal
 		{0, 0}			//texture
 	},
-	//    glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);  // Bottom Left Of The Texture and Quad
+	// Bottom Left Of The Texture and Quad
 	{
 		{-1, -1, 1},	//vertex
-		{ 0, -1, 0},		//normal
+		{ 0, -1, 0},	//normal
 		{1, 0}			//texture
 	},
-	//    glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-	//    // Right face
-	//    glNormal3f( 1.0f, 0.0f, 0.0f);      // Normal Facing Right
+	// Bottom Right Of The Texture and Quad
+	// Right face
+	// Normal Facing Right
 	{
 		{1, -1, -1},	//vertex
 		{ 1, 0, 0},		//normal
 		{1, 0}			//texture
 	},
-	//    glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);  // Bottom Right Of The Texture and Quad
+	// Bottom Right Of The Texture and Quad
 	{
 		{1, 1, -1},	//vertex
 		{ 1, 0, 0},		//normal

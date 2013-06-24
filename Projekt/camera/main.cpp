@@ -65,267 +65,30 @@ void LIGHTING();
 void drawSphere();
 
 //Shader* shader;
+void error();
+void InitTekstury();
+bool InitShaders();
+void CleanUpShaders();
+void msgbox(const char *msg,char *title);
+void processMouse(int button, int state, int x, int y);
+int getTime();
+void SetLightning();
+float AngleInBounds(float value);
+void AnimationGlobals();
+void drawTheCube();
+void printText(string text);
+void display();
+void Exit();
+void reshape (int w, int h);
+void getShiftStatus(int shift_state);
+void keydown(unsigned char key, int x, int y);
+void keyup(unsigned char key,int x, int y);
+void specialDown(int key, int mx,int my);
+void specialKeyUp(int key, int mx, int my);
+void processMouseActiveMotion(int x, int y);
+void processMousePassiveMotion(int x, int y);
+void generateScene();
 
-void error()
-{
-  GLenum err = glGetError();
-  if(err != 0)
-  {
-	  MessageBox(NULL, (const char*)gluErrorString(err), "B³¹d", MB_OK);
-	  if(QUIT_ON_ERROR) exit(-1);
-  }
-}
-// ----------------------------------------------------------------------------+
-
-void InitTekstury()
-{
-	tekstury.Dodaj(Tekstura("earth_sphere.bmp",		GL_TEXTURE0), "earth_sphere");
-	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp",	GL_TEXTURE1), "mosaicwindow");
-	tekstury.Dodaj(Tekstura("octant6_8.bmp",		GL_TEXTURE2), "octant");
-	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-	glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
-}
-
-
-bool InitShaders() 
-{
-	Shader cube = Shader("cube.vert", "cube.frag");
-	Shader sphere = Shader("sphere.vert", "sphere.frag");
-	shadery.Dodaj(cube, "main");
-	shadery.Dodaj(cube, "cube");
-	shadery.Dodaj(sphere, "sphere");
-	cube.Activate();
-	cube.BindValue("texture1", 0);
-	cube.BindValue("texture2", 1);
-
-  return true;
-}
-
-// ----------------------------------------------------------------------------+
-void CleanUpShaders() {
-  glUseProgram(0);
-  shadery.UsunWszystko();
-  //shader->Delete();
-  //shadery["main"].Delete();
-}
-
-// ----------------------------------------------------------------------------+
-
-
-void msgbox(const char *msg,char *title){
-
-	MessageBoxA(NULL,msg,title,MB_OKCANCEL);
-}
-
-
-// get mouse button state
-void processMouse(int button, int state, int x, int y) {
-	controls->processMouse(button, state,x, y);
-}
-
-
-int getTime()
-{
-	static SYSTEMTIME LastTimeGot;
-	SYSTEMTIME newTime;
-	GetSystemTime(&newTime);
-	FILETIME fNew, fLast;
-	SystemTimeToFileTime(&newTime,&fNew);
-	SystemTimeToFileTime(&LastTimeGot,&fLast);
-	CompareFileTime(&fNew,&fLast);
-	int wynik = CompareFileTime(&fNew,&fLast);
-	LastTimeGot=newTime;
-	return wynik;
-}
-
-void SetLightning()
-{  
-	glLightfv (GL_LIGHT0, GL_SPECULAR, SpecularLight); 
-	glLightfv (GL_LIGHT0, GL_DIFFUSE, DiffuseLight); 
-	glLightfv (GL_LIGHT0, GL_AMBIENT, AmbientLight); 
-	glLightfv (GL_LIGHT0, GL_POSITION, LightPosition);
-}
-
-//Przyjmuje wartoœæ k¹ta w stopniach i zwraca odpowiadaj¹c¹ wartoœæ z zakresu [0, 360)
-float AngleInBounds(float value)
-{
-	while(value >= 360)
-	{
-		value -= 360;
-	}
-	while(value < 0)
-	{
-		value += 360;
-	}
-
-	return value;
-}
-
-void AnimationGlobals()
-{
-  int timeInterval = getTime();
-	time+=timeInterval;
-
-  if(controls->przesuwanie) 
-	  rotation = rotation + 0.05*timeInterval;   // zwieksza licznik kata obrotu
-  else
-	  rotation = 0;
-
-  turnAngle += 0.25*timeInterval;
-
-  rotation = AngleInBounds(rotation);
-  turnAngle = AngleInBounds(turnAngle);
-
-  if (controls->zmianaKoloru)
-  {
-	  alpha += timeInterval*0.05*phase;
-	  if(alpha>2 || alpha<-1)
-		  phase=-phase; 
-  }
-  else
-  {
-	  alpha = 1;
-  }
-}
-
-void drawTheCube()
-{
-	//Set up
-	AnimationGlobals();
-	SetLightning();
-	//int shaderId;
-	const string shaderName = "cube";
-	Shader cubeShader = shadery[shaderName];
-	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
-	cubeShader.Activate();
-	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
-	//glUseProgram(cubeShader.getId());
-	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
-	cubeShader.BindValue("rotation", rotation);
-	cubeShader.BindValue("alpha", alpha);
-	tekstury[0].Bind();
-	tekstury[1].Bind();
-	glPushMatrix();
-
-	LIGHTING();
-	//Draw
-	glCallList(board);
-	
-	
-	//Clean up
-	glPopMatrix();
-	//shadery["main"].Deactivate();
-	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
-	tekstury.UnbindAll();
-}
-
-void printText(string text)
-{
-	static void* font = GLUT_BITMAP_TIMES_ROMAN_24;
-
-	int length = text.length();
-	for(int i = 0; i<length; ++i)
-	{
-		glutBitmapCharacter(font, text[i]);
-	}
-}
-
-// this function is called by GLUT once per frame
-void display(){
-
-	// Clear the screen
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);  // kolor tla
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// process the camera
-	//camera.doCamera();
-
-	// draw the scene
-	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
-	glLoadIdentity();
-	camera.doCamera();
-	glRotatef(-90, 0, 0, 1);
-	glTranslatef(5, 0, 0);
-	//glRotatef(-90, 1, 0, 0);
-	//glRotatef(-90, 0, 1, 0);
-	drawTheCube();
-	
-	glTranslatef(10, 0, 0);
-	drawSphere();
-	glutSwapBuffers();
-	glutPostRedisplay();
-}
-
-void Exit()
-{
-	CleanUpShaders();
-	tekstury.UsunWszystko();
-	exit(0);
-}
-
-// reshape is called (once) when the window is created or resized
-// it defines the shape of the viewport and initializes the graphics matrices
-void reshape (int w, int h){
-	glViewport(0, 0, (GLint) w, (GLint) h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-.9, .9, -.56, .56, .6, 1000000.0);
-	glTranslated(0,0,-.1);
-	glMatrixMode(GL_MODELVIEW);
-}
-
-// poll the shift, control, and alt keys
-void getShiftStatus(int shift_state) {
-
-	controls->getShiftStatus(shift_state);
-}
-// get key (down) states
-void keydown(unsigned char key, int x, int y)
-{
-	if(key==27)
-		Exit();
-	controls->keydown(key, x, y);
-}
-// get key (up) states
-void keyup(unsigned char key,int x, int y){
-
-	controls->keyup(key, x, y);
-}
-void specialDown(int key, int mx,int my){
-
-	controls->specialDown(key, mx, my);
-}
-void specialKeyUp(int key, int mx, int my){
-
-	controls->specialKeyUp(key, mx, my);
-}
-// adjust camera pitch and yaw (this function is called when the mouse is moved while a button is pressed)
-void processMouseActiveMotion(int x, int y){
-
-	controls->processMouseActiveMotion(x, y);
-	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
-}
-// adjust camera pitch and yaw (when mouse buttons are idle)
-void processMousePassiveMotion(int x, int y){
-
-	controls->processMousePassiveMotion(x,y);
-	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
-}
-
-
-
-
-void generateScene(){
-
-	static GLfloat squareSize = 100;
-	static bool checker = false;
-
-	board = glGenLists(1);
-	glNewList(board, GL_COMPILE);
-	glDrawCube();
-		
-	glEndList();
-}
 
 
 
@@ -362,22 +125,84 @@ int main(int argc, char** argv){
 }
 
 
-void CREATE_SPHERE ( float size )
+
+
+
+
+
+/////////////////////////////////////    SETUP    ///////////////////////////////////////
+
+void InitTekstury()
 {
-		glPushMatrix();
-		glRotatef ( 90.0, 1.0, 0.0, 0.0 );
-		glColor4f ( 1.0, 1.0, 1.0, 1.0 );
-		GLUquadricObj* QUADRIC_OBJECT = gluNewQuadric();
-		///////////////////////////////////////////////////////////////////////////////////
-		gluQuadricDrawStyle ( QUADRIC_OBJECT, GLU_FILL );
-		gluQuadricNormals ( QUADRIC_OBJECT, GLU_SMOOTH );
-		gluQuadricTexture ( QUADRIC_OBJECT, GL_TRUE );
-		///////////////////////////////////////////////////////////////////////////////////
-		gluSphere ( QUADRIC_OBJECT, size, 20, 20 );
-		///////////////////////////////////////////////////////////////////////////////////
-		gluDeleteQuadric ( QUADRIC_OBJECT );
-		glPopMatrix();
+	tekstury.Dodaj(Tekstura("earth_sphere.bmp",		GL_TEXTURE0), "earth_sphere");
+	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp",	GL_TEXTURE1), "mosaicwindow");
+	tekstury.Dodaj(Tekstura("octant6_8.bmp",		GL_TEXTURE2), "octant");
+	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+	glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 }
+//
+//void SetLightning()
+//{  
+//	glLightfv (GL_LIGHT0, GL_SPECULAR, SpecularLight); 
+//	glLightfv (GL_LIGHT0, GL_DIFFUSE, DiffuseLight); 
+//	glLightfv (GL_LIGHT0, GL_AMBIENT, AmbientLight); 
+//	glLightfv (GL_LIGHT0, GL_POSITION, LightPosition);
+//}
+
+void AnimationGlobals()
+{
+  int timeInterval = getTime();
+	time+=timeInterval;
+
+  if(controls->przesuwanie) 
+	  rotation = rotation + 0.05*timeInterval;   // zwieksza licznik kata obrotu
+  else
+	  rotation = 0;
+
+  turnAngle += 0.25*timeInterval;
+
+  rotation = AngleInBounds(rotation);
+  turnAngle = AngleInBounds(turnAngle);
+
+  if (controls->zmianaKoloru)
+  {
+	  alpha += timeInterval*0.05*phase;
+	  if(alpha>2 || alpha<-1)
+		  phase=-phase; 
+  }
+  else
+  {
+	  alpha = 1;
+  }
+}
+
+
+
+bool InitShaders() 
+{
+	Shader cube = Shader("cube.vert", "cube.frag");
+	Shader sphere = Shader("sphere.vert", "sphere.frag");
+	shadery.Dodaj(cube, "main");
+	shadery.Dodaj(cube, "cube");
+	shadery.Dodaj(sphere, "sphere");
+	cube.Activate();
+	cube.BindValue("texture1", 0);
+	cube.BindValue("texture2", 1);
+
+  return true;
+}
+
+// reshape is called (once) when the window is created or resized
+// it defines the shape of the viewport and initializes the graphics matrices
+void reshape (int w, int h){
+	glViewport(0, 0, (GLint) w, (GLint) h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-.9, .9, -.56, .56, .6, 1000000.0);
+	glTranslated(0,0,-.1);
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 
 /////// LIGHTING ///////////////
@@ -387,34 +212,122 @@ void CREATE_SPHERE ( float size )
 void LIGHTING ( void )
 {
 	///////// Light variables /////////////
-	static GLfloat LIGHT_AMBIENCE[]  = { 0.33, 0.34, 0.45, 1.0 };
-	static GLfloat LIGHT_DIFFUSION[] = { 0.91, 0.81, 0.81, 1.0 };
-	static GLfloat LIGHT_POSITION[]  = { -7.51, 0.00, 0.00, 0.5 };
-	static GLfloat DiffuseMaterial[] = {1.0, 0.0, 0.0}; //set the material to red
-	static GLfloat SpecularMaterial[] = {1.0, 1.0, 1.0}; //set the material to white
-	static GLfloat EmissiveMaterial[] = {0.0, 1.0, 0.0}; //set the material to green
-	static GLfloat whiteSpecularLight[] = {1.0, 1.0, 1.0}; //set the light specular to white
-	static GLfloat AmbientLight[] = {0.125, 0.125, 0.125}; //set the light ambient to black
-	static GLfloat DiffuseLight[] = {1.0, 1.0, 1.0}; //set the diffuse light to white
-	static GLfloat blankMaterial[] = {1.0, 1.0, 1.0}; //set the diffuse light to white
-	static GLfloat mShininess = 128; //set the shininess of the material
+	static GLfloat LIGHT_AMBIENCE[]		= { 0.33, 0.34, 0.45, 1.0 };
+	static GLfloat LIGHT_DIFFUSION[]	= { 0.91, 0.81, 0.81, 1.0 };
+	static GLfloat LIGHT_POSITION[]		= { -7.51, 0.00, 0.00, 0.5 };
+	static GLfloat DiffuseMaterial[]	= {1.0, 0.0, 0.0};			//set the material to red
+	static GLfloat SpecularMaterial[]	= {1.0, 1.0, 1.0};			//set the material to white
+	static GLfloat EmissiveMaterial[]	= {0.0, 1.0, 0.0};			//set the material to green
+	static GLfloat SpecularLight[] = {1.0, 1.0, 1.0};			//set the light specular to white
+	static GLfloat AmbientLight[]		= {0.125, 0.125, 0.125};	//set the light ambient to black
+	static GLfloat DiffuseLight[]		= {1.0, 1.0, 1.0};			//set the diffuse light to white
+	static GLfloat blankMaterial[]		= {1.0, 1.0, 1.0};			//set the diffuse light to white
+	static GLfloat mShininess			= 128;						//set the shininess of the material
+
+	glLightModelf ( GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0);
+	glLightModelf ( GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR); 
+	//glLightModelfv( GL_LIGHT_MODEL_AMBIENT, AmbientLight );
+
 	glLightfv ( GL_LIGHT0, GL_POSITION, LIGHT_POSITION );
-	glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0);
-	glLightModelf(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR); 
-	glLightModelfv ( GL_LIGHT_MODEL_AMBIENT, AmbientLight );
-	glLightfv ( GL_LIGHT0, GL_POSITION, LIGHT_POSITION );
-	glLightfv ( GL_LIGHT0, GL_SPECULAR,  whiteSpecularLight);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, LIGHT_AMBIENCE);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, DiffuseLight);
+	glLightfv ( GL_LIGHT0, GL_SPECULAR, SpecularLight );
+	glLightfv ( GL_LIGHT0, GL_AMBIENT,  LIGHT_AMBIENCE );
+	glLightfv ( GL_LIGHT0, GL_DIFFUSE,  DiffuseLight);
 
 	glEnable ( GL_LIGHTING );
 	glEnable ( GL_LIGHT0 );
-	glEnable(GL_SHININESS);
+	glEnable ( GL_SHININESS );
 		
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, SpecularMaterial);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, DiffuseMaterial);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, EmissiveMaterial);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &mShininess);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,	SpecularMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,		DiffuseMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,	EmissiveMaterial);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS,	&mShininess);
+}
+
+/////////////////////////////////////   DRAWING   ///////////////////////////////////////
+
+
+// this function is called by GLUT once per frame
+void display(){
+
+	// Clear the screen
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);  // kolor tla
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	AnimationGlobals();
+
+	// process the camera
+	//camera.doCamera();
+
+	// draw the scene
+	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	glLoadIdentity();
+	camera.doCamera();
+	glRotatef(-90, 0, 0, 1);
+	glTranslatef(5, 0, 0);
+	//glRotatef(-90, 1, 0, 0);
+	//glRotatef(-90, 0, 1, 0);
+	LIGHTING();
+	drawTheCube();
+	
+	glTranslatef(10, 0, 0);
+	drawSphere();
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
+
+void generateScene(){
+
+	//static GLfloat squareSize = 100;
+	//static bool checker = false;
+
+	board = glGenLists(1);
+	glNewList(board, GL_COMPILE);
+	LIGHTING();
+	glDrawCube();
+		
+	glEndList();
+}
+
+void drawTheCube()
+{
+	//Set up
+	//SetLightning();
+	//int shaderId;
+	const string shaderName = "cube";
+	Shader cubeShader = shadery[shaderName];
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	cubeShader.Activate();
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	//glUseProgram(cubeShader.getId());
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	cubeShader.BindValue("rotation", rotation);
+	cubeShader.BindValue("alpha", alpha);
+	tekstury[0].Bind();
+	tekstury[1].Bind();
+	glPushMatrix();
+
+	//LIGHTING();
+	//Draw
+	//glCallList(board);
+	glDrawCube();
+	
+	
+	//Clean up
+	glPopMatrix();
+	//shadery["main"].Deactivate();
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	tekstury.UnbindAll();
+}
+
+void printText(string text)
+{
+	static void* font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+	int length = text.length();
+	for(int i = 0; i<length; ++i)
+	{
+		glutBitmapCharacter(font, text[i]);
+	}
 }
 
 
@@ -438,7 +351,7 @@ void drawSphere()
 	glPushMatrix();
 		glRotatef (cameraRotationAngle*2, 0,1,0);
 
-		LIGHTING();
+		//LIGHTING();
 		//draw first sphere
 		
 		shader.BindValue("texture1",0);
@@ -484,3 +397,122 @@ void drawSphere()
 		glPopMatrix();
 		shader.Deactivate();
 }
+
+void CREATE_SPHERE ( float size )
+{
+		glPushMatrix();
+		glRotatef ( 90.0, 1.0, 0.0, 0.0 );
+		glColor4f ( 1.0, 1.0, 1.0, 1.0 );
+		GLUquadricObj* QUADRIC_OBJECT = gluNewQuadric();
+		///////////////////////////////////////////////////////////////////////////////////
+		gluQuadricDrawStyle ( QUADRIC_OBJECT, GLU_FILL );
+		gluQuadricNormals ( QUADRIC_OBJECT, GLU_SMOOTH );
+		gluQuadricTexture ( QUADRIC_OBJECT, GL_TRUE );
+		///////////////////////////////////////////////////////////////////////////////////
+		gluSphere ( QUADRIC_OBJECT, size, 20, 20 );
+		///////////////////////////////////////////////////////////////////////////////////
+		gluDeleteQuadric ( QUADRIC_OBJECT );
+		glPopMatrix();
+}
+
+/////////////////////////////////////  UTILITIES  ///////////////////////////////////////
+
+//Przyjmuje wartoœæ k¹ta w stopniach i zwraca odpowiadaj¹c¹ wartoœæ z zakresu [0, 360)
+float AngleInBounds(float value)
+{
+	while(value >= 360)
+	{
+		value -= 360;
+	}
+	while(value < 0)
+	{
+		value += 360;
+	}
+
+	return value;
+}
+
+
+void msgbox(const char *msg,char *title){
+
+	MessageBoxA(NULL,msg,title,MB_OKCANCEL);
+}
+
+
+int getTime()
+{
+	static SYSTEMTIME LastTimeGot;
+	SYSTEMTIME newTime;
+	GetSystemTime(&newTime);
+	FILETIME fNew, fLast;
+	SystemTimeToFileTime(&newTime,&fNew);
+	SystemTimeToFileTime(&LastTimeGot,&fLast);
+	CompareFileTime(&fNew,&fLast);
+	int wynik = CompareFileTime(&fNew,&fLast);
+	LastTimeGot=newTime;
+	return wynik;
+}
+
+void error()
+{
+  GLenum err = glGetError();
+  if(err != 0)
+  {
+	  MessageBox(NULL, (const char*)gluErrorString(err), "B³¹d", MB_OK);
+	  if(QUIT_ON_ERROR) exit(-1);
+  }
+}
+
+void Exit()
+{
+	shadery.UsunWszystko();
+	tekstury.UsunWszystko();
+	exit(0);
+}
+
+/////////////////////////////////////  CONTROLS  ///////////////////////////////////////
+
+// get mouse button state
+void processMouse(int button, int state, int x, int y) {
+	controls->processMouse(button, state,x, y);
+}
+// poll the shift, control, and alt keys
+void getShiftStatus(int shift_state) {
+
+	controls->getShiftStatus(shift_state);
+}
+// get key (down) states
+void keydown(unsigned char key, int x, int y)
+{
+	if(key==27)
+		Exit();
+	controls->keydown(key, x, y);
+}
+// get key (up) states
+void keyup(unsigned char key,int x, int y){
+
+	controls->keyup(key, x, y);
+}
+void specialDown(int key, int mx,int my){
+
+	controls->specialDown(key, mx, my);
+}
+void specialKeyUp(int key, int mx, int my){
+
+	controls->specialKeyUp(key, mx, my);
+}
+// adjust camera pitch and yaw (this function is called when the mouse is moved while a button is pressed)
+void processMouseActiveMotion(int x, int y){
+
+	controls->processMouseActiveMotion(x, y);
+	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
+}
+// adjust camera pitch and yaw (when mouse buttons are idle)
+void processMousePassiveMotion(int x, int y){
+
+	controls->processMousePassiveMotion(x,y);
+	//glutWarpPointer(screenWidth / 2, screenHeight / 2);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////

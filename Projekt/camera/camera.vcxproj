@@ -112,6 +112,11 @@
     <None Include="sphere.frag" />
     <None Include="sphere.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="earth_sphere.bmp" />
+    <Image Include="mosaicwindowgp9.bmp" />
+    <Image Include="octant6_8.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
