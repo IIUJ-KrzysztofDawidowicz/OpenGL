@@ -30,6 +30,8 @@ public:
 
 	void BindValue(const GLchar* name, const GLuint value);
 
+	void BindValueArray(const GLchar* name, const int length, const float values[]);
+
 	void Activate();
 
 	void Deactivate();

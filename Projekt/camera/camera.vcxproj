@@ -81,6 +81,7 @@
     <ClCompile Include="GLee.c" />
     <ClCompile Include="kostka.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Punkt.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Tekstury.cpp" />
   </ItemGroup>
@@ -98,6 +99,7 @@
     <ClInclude Include="kostka.h" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="ManagerTekstur.h" />
+    <ClInclude Include="Punkt.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="targetver.h" />
@@ -109,11 +111,16 @@
     <None Include="blurShader.vert" />
     <None Include="cube.frag" />
     <None Include="cube.vert" />
+    <None Include="particle.frag" />
+    <None Include="particle.vert" />
     <None Include="sphere.frag" />
     <None Include="sphere.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="earth_sphere.bmp" />
+    <Image Include="gwiazdka.bmp" />
+    <Image Include="gwiazdka2.bmp" />
+    <Image Include="gwiazdka3.bmp" />
     <Image Include="mosaicwindowgp9.bmp" />
     <Image Include="octant6_8.bmp" />
   </ItemGroup>

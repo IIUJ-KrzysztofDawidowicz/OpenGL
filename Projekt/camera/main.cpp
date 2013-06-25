@@ -20,6 +20,9 @@ using namespace std;
 #include "Shader.h"
 #include "ManagerTekstur.h"
 #include "ShaderManager.h"
+#include "Punkt.h"
+#include <time.h>
+#include <random>
 
 using std::string;
 
@@ -37,7 +40,7 @@ const bool QUIT_ON_ERROR = false;
 bool freemove = true;    // Fly?
 float alpha=0.5;
 int phase=-1;
-float time=0;
+static float currentTime=0;
 
 float rotation = 0.0f;
 double turn = 0;
@@ -45,8 +48,10 @@ int /*screenWidth, screenHeight,*//* mouseX, mouseY,*/ board;
 float turnAngle=0;
 float cameraRotationAngle=0;
 
-// global doubles for camera
-//double pi = 3.141592653589793233297;        // pi
+
+const int NUM_POINTS= 500;
+const int NUM_TEKSTUR = 3; //Liczba tekstur dla cz¹staczek
+static Punkt punkty[NUM_POINTS]; //Tablica punktów
 
 
 
@@ -87,7 +92,8 @@ void specialDown(int key, int mx,int my);
 void specialKeyUp(int key, int mx, int my);
 void processMouseActiveMotion(int x, int y);
 void processMousePassiveMotion(int x, int y);
-void generateScene();
+void InitPoints();
+void drawParticles();
 
 
 
@@ -104,7 +110,10 @@ int main(int argc, char** argv){
 	screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
 	glutWarpPointer(screenWidth / 2, screenHeight / 2);         // center the mouse
 
-
+	
+	InitShaders();
+	InitTekstury();
+	InitPoints();
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc (keydown);
 	glutKeyboardUpFunc (keyup);                                 // function is called when a 'normal' key is let up
@@ -117,9 +126,8 @@ int main(int argc, char** argv){
   glEnable(GL_DEPTH_TEST);
   glColorMaterial ( GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	InitShaders();
-	InitTekstury();
-	generateScene();
+
+	//generateScene();
 	glutMainLoop();
 	return 0;
 }
@@ -137,6 +145,9 @@ void InitTekstury()
 	tekstury.Dodaj(Tekstura("earth_sphere.bmp",		GL_TEXTURE0), "earth_sphere");
 	tekstury.Dodaj(Tekstura("mosaicwindowgp9.bmp",	GL_TEXTURE1), "mosaicwindow");
 	tekstury.Dodaj(Tekstura("octant6_8.bmp",		GL_TEXTURE2), "octant");
+	tekstury.Dodaj(Tekstura("gwiazdka.bmp",			GL_TEXTURE3), "gwiazdka1");
+	tekstury.Dodaj(Tekstura("gwiazdka2.bmp",		GL_TEXTURE3), "gwiazdka2");
+	tekstury.Dodaj(Tekstura("gwiazdka3.bmp",		GL_TEXTURE3), "gwiazdka3");
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 	glTexEnvf (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
 }
@@ -148,11 +159,38 @@ void InitTekstury()
 //	glLightfv (GL_LIGHT0, GL_AMBIENT, AmbientLight); 
 //	glLightfv (GL_LIGHT0, GL_POSITION, LightPosition);
 //}
+bool InitShaders() 
+{
+	Shader cube = Shader("cube.vert", "cube.frag");
+	Shader sphere = Shader("sphere.vert", "sphere.frag");
+	shadery.Dodaj(cube, "main");
+	shadery.Dodaj(cube, "cube");
+	shadery.Dodaj(sphere, "sphere");
+	cube.Activate();
+	cube.BindValue("texture1", 0);
+	cube.BindValue("texture2", 1);
+	Shader particle = Shader("particle.vert", "particle.frag");
+	shadery.Dodaj(particle, "particle");
+	particle.Activate();
+	particle.BindValue("texture", 3);
+
+  return true;
+}
+
+//Inicjalizuje tablicê punktów
+void InitPoints()
+{
+	srand(time(nullptr));
+	for(int i =0; i<NUM_POINTS;++i)
+	{
+		punkty[i] = Punkt(rand()%Punkt::PARTICLE_LIFE, tekstury, NUM_TEKSTUR, 3);
+	}
+}
 
 void AnimationGlobals()
 {
   int timeInterval = getTime();
-	time+=timeInterval;
+  currentTime+=timeInterval;
 
   if(controls->przesuwanie) 
 	  rotation = rotation + 0.05*timeInterval;   // zwieksza licznik kata obrotu
@@ -178,19 +216,6 @@ void AnimationGlobals()
 
 
 
-bool InitShaders() 
-{
-	Shader cube = Shader("cube.vert", "cube.frag");
-	Shader sphere = Shader("sphere.vert", "sphere.frag");
-	shadery.Dodaj(cube, "main");
-	shadery.Dodaj(cube, "cube");
-	shadery.Dodaj(sphere, "sphere");
-	cube.Activate();
-	cube.BindValue("texture1", 0);
-	cube.BindValue("texture2", 1);
-
-  return true;
-}
 
 // reshape is called (once) when the window is created or resized
 // it defines the shape of the viewport and initializes the graphics matrices
@@ -226,7 +251,7 @@ void LIGHTING ( void )
 
 	glLightModelf ( GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0);
 	glLightModelf ( GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR); 
-	//glLightModelfv( GL_LIGHT_MODEL_AMBIENT, AmbientLight );
+	glLightModelfv( GL_LIGHT_MODEL_AMBIENT, AmbientLight );
 
 	glLightfv ( GL_LIGHT0, GL_POSITION, LIGHT_POSITION );
 	glLightfv ( GL_LIGHT0, GL_SPECULAR, SpecularLight );
@@ -265,28 +290,34 @@ void display(){
 	glTranslatef(5, 0, 0);
 	//glRotatef(-90, 1, 0, 0);
 	//glRotatef(-90, 0, 1, 0);
+
 	LIGHTING();
+	drawParticles();
+	glTranslatef(10, 0, 0);
 	drawTheCube();
 	
 	glTranslatef(10, 0, 0);
 	drawSphere();
+
+	
+
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
 
-
-void generateScene(){
-
-	//static GLfloat squareSize = 100;
-	//static bool checker = false;
-
-	board = glGenLists(1);
-	glNewList(board, GL_COMPILE);
-	LIGHTING();
-	glDrawCube();
-		
-	glEndList();
-}
+//
+//void generateScene(){
+//
+//	//static GLfloat squareSize = 100;
+//	//static bool checker = false;
+//
+//	board = glGenLists(1);
+//	glNewList(board, GL_COMPILE);
+//	LIGHTING();
+//	glDrawCube();
+//		
+//	glEndList();
+//}
 
 void drawTheCube()
 {
@@ -304,31 +335,20 @@ void drawTheCube()
 	cubeShader.BindValue("alpha", alpha);
 	tekstury[0].Bind();
 	tekstury[1].Bind();
-	glPushMatrix();
+	for(int j = -5; j <= 5; ++j)
+		for(int i = -5; i <= 5; ++i)
+		{
+			glPushMatrix();
+				glTranslatef(0, 4*i, 4*j);
+				glDrawCube(1);
+			glPopMatrix();
+		}
 
-	//LIGHTING();
-	//Draw
-	//glCallList(board);
-	glDrawCube();
-	
-	
-	//Clean up
-	glPopMatrix();
 	//shadery["main"].Deactivate();
 	//glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
 	tekstury.UnbindAll();
 }
 
-void printText(string text)
-{
-	static void* font = GLUT_BITMAP_TIMES_ROMAN_24;
-
-	int length = text.length();
-	for(int i = 0; i<length; ++i)
-	{
-		glutBitmapCharacter(font, text[i]);
-	}
-}
 
 
 void drawSphere()
@@ -396,6 +416,51 @@ void drawSphere()
 		//CREATE_SPHERE();
 		glPopMatrix();
 		shader.Deactivate();
+}
+
+
+void drawParticles()
+{
+	 // GLuint  location = glGetUniformLocation(shader_program,"rotation");
+  //glUniform1f(location, rotation);
+  //location = glGetUniformLocation(shader_program,"timer");
+  //glUniform1f(location, currentTime );
+	Shader shader = shadery["particle"];
+	shader.Activate();
+	/*GLuint location = glGetUniformLocation(shader.getId(), "rotation");
+	error();
+	glUniform1f(location, rotation);*/
+	//shader.BindValue("rotation", rotation);
+	//if(glGetError()!=0)
+	//	return;
+	//error();
+
+	//glTranslatef(0.0f, 0.0f, -30.0f);
+	glPushMatrix();
+	glRotatef(90, 1, 0, 0);
+
+	for (int i = 0; i < NUM_POINTS; i++)
+	{
+		if(currentTime>punkty[i].getStart())
+		{
+			if(currentTime-punkty[i].getStart()>Punkt::PARTICLE_LIFE)
+				punkty[i] = Punkt(currentTime, tekstury, NUM_TEKSTUR, 3);
+			punkty[i].Rysuj(shader, currentTime);
+		}
+	}
+	glPopMatrix();
+	//error();
+}
+
+void printText(string text)
+{
+	static void* font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+	int length = text.length();
+	for(int i = 0; i<length; ++i)
+	{
+		glutBitmapCharacter(font, text[i]);
+	}
 }
 
 void CREATE_SPHERE ( float size )

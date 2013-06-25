@@ -114,11 +114,30 @@ void Shader::BindValue(const GLchar* name, const int value)
 	glUniform1i(location, value);
 }
 
-
 void Shader::BindValue(const GLchar* name, const GLuint value)
 {
 	GLuint location = glGetUniformLocation(shader_program, name);
 	glUniform1uiEXT(location, value);
+}
+
+void Shader::BindValueArray(const GLchar* name, const int length, const float values[])
+{
+	GLuint location = glGetUniformLocation(shader_program, name);
+	switch(length)
+	{
+		case 1:
+			glUniform1i(location, values[0]);
+			break;
+		case 2:
+			glUniform2f(location, values[0], values[1]);
+			break;
+		case 3:
+			glUniform3f(location, values[0], values[1], values[2]);
+			break;
+		case 4:
+			glUniform4f(location, values[0], values[1], values[2], values[3]);
+			break;
+	}
 }
 
 void Shader::Activate()
